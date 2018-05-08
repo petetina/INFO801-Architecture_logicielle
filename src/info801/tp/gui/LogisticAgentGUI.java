@@ -1,6 +1,8 @@
 package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
+import info801.tp.OpenJMS;
+import info801.tp.RandomGenerator;
 import info801.tp.gui.adapters.NeedsModel;
 import info801.tp.gui.adapters.SpecificationsModel;
 import info801.tp.models.Specification;
@@ -99,7 +101,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemSendCounterProposalToCustomer = new JMenuItem("Send the counter proposal to customer");
+        menuItemSendCounterProposalToCustomer = new JMenuItem("Send all proposals for this project to customer");
         menuItemSendCounterProposalToCustomer.addActionListener(this);
         popupMenu.add(menuItemSendCounterProposalToCustomer);
 
@@ -110,6 +112,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     public void addNeed(String need){
         String array[] = need.split(";");
         List<Object> data = new ArrayList<>();
+        data.add(RandomGenerator.generateId());
         for(String s : array) {
             data.add(s);
         }
@@ -121,17 +124,34 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         counterProposalsModel.add(counterProposal);
     }
 
+    public void sendAllProposalsForProject(String projectId,String customerId){
+        String allProposals = "";
+        for(Specification proposal : counterProposalsModel.data){
+            if(proposal.getId().equals(projectId))
+                allProposals += proposal.toString() + ";;";
+        }
+        if(!allProposals.isEmpty())
+            allProposals = allProposals.substring(0,allProposals.length()-2);
+
+        OpenJMS.getInstance().postMessageInQueue(allProposals,"transmitCounterRFPTo"+customerId);
+        JOptionPane.showMessageDialog(null, projectId + "," + customerId + "Counter proposals has been sent to customer !", "", JOptionPane.INFORMATION_MESSAGE);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
+
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemSendRFP) {
-            Integer quantity = Integer.valueOf((String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),3));
-            String customerName = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1);
-            new CreateRFP(this,logisticAgent, customerName,quantity);
+            String projectId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1);
+            Integer quantity = Integer.valueOf((String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),4));
+            String customerName = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),2);
+            new CreateRFP(this,logisticAgent, projectId,customerName,quantity);
         } else if (menu == menuItemAskForMoreDetails) {
             JOptionPane.showMessageDialog(null, "TODO !", "", JOptionPane.INFORMATION_MESSAGE);
         }else if(menu == menuItemSendCounterProposalToCustomer){
-            JOptionPane.showMessageDialog(null, "Send counter proposal to customer TODO !", "", JOptionPane.INFORMATION_MESSAGE);
+            String projectId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1);
+            String customerId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),2);
+            sendAllProposalsForProject(projectId,customerId);
         }
     }
 

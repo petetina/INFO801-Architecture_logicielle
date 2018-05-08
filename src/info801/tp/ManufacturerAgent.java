@@ -79,8 +79,9 @@ public class ManufacturerAgent extends Thread {
         return Specification.parse(counterRFP);
     }
 
-    public void transmitCounterProposalToLogistic(Specification counterFRP) {
-        Log.write(name," transmit a counter RFP to logistic " + counterFRP.getLogisticName() + " !");
-        OpenJMS.getInstance().postMessageInQueue(counterFRP.toString(),"transmitCounterRFPTo"+counterFRP.getLogisticName());
+    public void transmitCounterProposalToLogistic(Specification counterRFP) {
+        counterRFP.setManufacturer(name);
+        Log.write(name," transmit a counter RFP to logistic " + counterRFP.getLogisticName() + " !");
+        OpenJMS.getInstance().postMessageInQueue(counterRFP.toString(),"transmitCounterRFPTo"+counterRFP.getLogisticName());
     }
 }

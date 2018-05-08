@@ -19,6 +19,7 @@ public class LogisticAgent extends Thread {
         frame = new LogisticAgentGUI(this);
         OpenJMS.getInstance().createTopic("needsCustomers"+name);
         OpenJMS.getInstance().createQueue("transmitCounterRFPTo"+name);
+        OpenJMS.getInstance().createQueue("rejectedProposals"+name);
         rfps = new HashMap<>();
     }
 
@@ -99,46 +100,5 @@ public class LogisticAgent extends Thread {
         String counterProposalString = OpenJMS.getInstance().receiveMessageFromQueue("transmitCounterRFPTo"+name);
         return Specification.parse(counterProposalString);
     }
-
-    /*
-    public void waitForResponsesAndSendToCustomer(int deadLine) {
-        List<Specification> result = new ArrayList<>();
-        Log.write(name," wait for responses !");
-        OpenJMS.getInstance().receiveAsyncMessageFromTopic("transmitCounterRFPTo"+name, new ResponsesReceiver());
-        wait(deadLine);
-
-        String message = "";
-        for(String manufacturerId : rfps.keySet())
-        {
-            message += rfps.get(manufacturerId).toString() + "|";
-        }
-        message = message.substring(0,message.length()-2);
-        Log.write(name ," sending " + rfps.size() + " counterRFP to customer 1");
-        OpenJMS.getInstance().postMessageInQueue(message,"transmitCounterRFPToCustomer1");
-    }*/
-/*
-    private class ResponsesReceiver implements MessageListener {
-
-        public void onMessage(Message message) {
-            if (message instanceof TextMessage) {
-
-                TextMessage text = (TextMessage) message;
-                try {
-
-                    Log.write(name + "receive a counter rfp " + text.getText());
-                    String tab[] = text.getText().split(";;");
-                    String idManufacturer = tab[0];
-                    Specification counterRFP = Specification.parse(tab[1]);
-
-                    rfps.put(idManufacturer,counterRFP);
-                } catch (JMSException exception) {
-                    System.err.println("Failed to get message text: " + exception);
-                }
-            }
-        }
-
-
-    }
-    */
 
 }

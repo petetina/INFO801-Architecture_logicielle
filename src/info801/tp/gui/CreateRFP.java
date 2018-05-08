@@ -19,7 +19,7 @@ public class CreateRFP extends JFrame{
     private JButton btnSendRFP;
     private JLabel lblQuantity;
 
-    public CreateRFP(JFrame parent, LogisticAgent logisticAgent, String customerName, int quantity){
+    public CreateRFP(JFrame parent, LogisticAgent logisticAgent, String projectId, String customerName, int quantity){
         lblQuantity.setText(quantity+"");
         setSize(400,250);
         setContentPane(mainPanel);
@@ -37,7 +37,7 @@ public class CreateRFP extends JFrame{
                     Double cost = Double.parseDouble(txtCost.getText());
                     int productionTimeInDays = Integer.parseInt(txtProductionTime.getText());
                     Specification specification = new Specification(customerName,"Logistic"+logisticAgent.getId(),getRequirements(),cost,productionTimeInDays,quantity);
-
+                    specification.setId(projectId);
                     logisticAgent.makeARequestForProposal(specification);
                     JOptionPane.showMessageDialog(null, "Le cahier des charges a été transmis aux fabricants", "", JOptionPane.INFORMATION_MESSAGE);
                     dispose();

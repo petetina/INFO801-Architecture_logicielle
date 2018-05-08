@@ -70,7 +70,8 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemMakeACounterRFP) {
-            designAndWorkShopAgent.makeACounterProposal(specificationsModel.data.get(specificationsTable.getSelectedRow()));
+            SpecificationsModel model = (SpecificationsModel)specificationsTable.getModel();
+            designAndWorkShopAgent.makeACounterProposal(model.data.get(specificationsTable.getSelectedRow()));
             JOptionPane.showMessageDialog(null,"Counter proposal sent to manufacturer "+designAndWorkShopAgent.getId(), "", JOptionPane.INFORMATION_MESSAGE);
         }
     }

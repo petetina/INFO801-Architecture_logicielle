@@ -7,13 +7,14 @@ import java.util.List;
  * Cahier des charges
  */
 public class Specification {
-
+    private String id;
     private String logisticName;
     private String customerName;
     private List<String> requirements;
     private double cost;
     private int productionTimeInDays;
     private int quantity;
+    private String manufacturer = "Non défini";
 
     public Specification(){
 
@@ -26,6 +27,22 @@ public class Specification {
         this.cost = cost;
         this.productionTimeInDays = productionTimeInDays;
         this.quantity = quantity;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
     }
 
     public double getCost() {
@@ -78,7 +95,7 @@ public class Specification {
 
     @Override
     public String toString() {
-        return requirements + ";" + cost + ";" + productionTimeInDays + ";" + quantity + ";" + logisticName + ";" + customerName;
+        return id + ";" + requirements + ";" + cost + ";" + productionTimeInDays + ";" + quantity + ";" + logisticName + ";" + customerName+";"+manufacturer;
     }
 
     public static Specification parse(String rfp){
@@ -87,23 +104,19 @@ public class Specification {
 
         String args[] = rfp.split(";");
         List<String> requirements = new ArrayList<>();
-        String req[] = args[0].replace("[","").replace("]","").split(",");
+        String req[] = args[1].replace("[","").replace("]","").split(",");
         for(String r : req)
             requirements.add(r.trim());
-        double cost = Double.parseDouble(args[1]);
-        int productionTimeInDays = Integer.parseInt(args[2]);
-        int quantity = Integer.parseInt(args[3]);
-        String logisticName = args[4];
-        String customerName = args[5];
-        return new Specification(customerName,logisticName,requirements,cost,productionTimeInDays,quantity);
-    }
+        double cost = Double.parseDouble(args[2]);
+        int productionTimeInDays = Integer.parseInt(args[3]);
+        int quantity = Integer.parseInt(args[4]);
+        String logisticName = args[5];
+        String customerName = args[6];
+        Specification specification = new Specification(customerName,logisticName,requirements,cost,productionTimeInDays,quantity);
+        specification.id = args[0];
 
-    public Specification clone(Specification other){
-        Specification specification = new Specification();
-        specification.logisticName = other.logisticName;
-
-        //specification
-        return null;
+        specification.manufacturer = args[7];
+        return specification;
     }
 
     public void addRequirement(String s) {

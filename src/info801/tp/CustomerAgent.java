@@ -26,11 +26,10 @@ public class CustomerAgent extends Thread{
 
     @Override
     public void run() {
-        /*List<Specification> propositions = waitForPropositions();
-        int num = chooseProposition(propositions);
-        if(num == 0){
-            //Not agree, so
-        }*/
+        while(true) {
+            List<Specification> propositions = waitForPropositions();
+            frame.addAll(propositions);
+        }
     }
 
     public void askToLogistic(int idLogistic, String need, int quantity) throws Exception{
@@ -39,18 +38,18 @@ public class CustomerAgent extends Thread{
 
     public List<Specification> waitForPropositions(){
         List<Specification> results = new ArrayList<>();
-        String propositionsString = OpenJMS.getInstance().receiveMessageFromTopic(name,"transmitCounterRFPTo" + name);
-        String propositions[] = propositionsString.split("|");
-        for(String propositionString : propositions){
-            results.add(Specification.parse(propositionsString));
+        String propositionsString = OpenJMS.getInstance().receiveMessageFromQueue("transmitCounterRFPTo" + name);
+        Log.write(name,"debug propositionsString = " + propositionsString);
+        String propositions[] = propositionsString.split(";;");
+        for(String prop : propositions){
+            Log.write(name,"proposal received : " + prop);
+            results.add(Specification.parse(prop));
         }
 
         return results;
     }
 
-    public int chooseProposition(List<Specification> specifications){
-        int chosenProposition = RandomGenerator.nextInt(0,specifications.size()-1);
-        Log.write("Customer "+id, " has chosen proposition "+ chosenProposition);
-        return chosenProposition;
+    public void notifyRejectedProposal(Specification proposal) {
+        OpenJMS.getInstance().postMessageInQueue(proposal.toString(),"rejectedProposals"+proposal.getLogisticName());
     }
 }

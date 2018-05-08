@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NeedsModel extends AbstractTableModel {
-    private String[] headers = {"Date","Nom du client", "Besoin du client", "Quantité","Etat"};
+    private String[] headers = {"Date","Numéro de commande","Nom du client", "Besoin du client", "Quantité","Etat"};
     public List<List<Object>> data = new ArrayList<>();
 
     @Override

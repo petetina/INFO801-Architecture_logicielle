@@ -8,37 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpecificationsModel extends AbstractTableModel {
-    protected String[] headers = {"Date","Requirements", "Coût (en €)", "Nombre de jours de prod", "Quantité"};
+    protected String[] headers = {"Date","Numéro de commande","Requirements", "Coût (en €)", "Nombre de jours de prod", "Quantité", "Fabricant"};
     public List<Specification> data = new ArrayList<>();
-
-    @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        switch(columnIndex){
-            case 1 :
-                String requirements = (String) aValue;
-                requirements = requirements.replace("<html>","")
-                        .replace("<body>","")
-                        .replace("<br/>","")
-                        .replace("</body>","")
-                        .replace("</html>","");
-                String req[] = requirements.trim().split(";");
-
-                List<String> result = new ArrayList<>();
-
-                for(String requirement : req)
-                    result.add(requirement);
-
-                data.get(rowIndex).setRequirements(result);
-
-                break;
-            case 2 : data.get(rowIndex).setCost(Double.valueOf((String)aValue));
-                break;
-            case 3 : data.get(rowIndex).setProductionTimeInDays(Integer.valueOf((String)aValue));
-                break;
-            case 4 : data.get(rowIndex).setQuantity(Integer.valueOf((String)aValue));
-                break;
-        }
-    }
 
     @Override
     public String getColumnName(int columnIndex) {
@@ -63,16 +34,21 @@ public class SpecificationsModel extends AbstractTableModel {
                 result = Tools.getCurrentTime();
                 break;
             case 1 :
+                result = data.get(rowIndex).getId()+"";
+                break;
+            case 2 :
                 result += "<html><body>";
                 for(String requirement : data.get(rowIndex).getRequirements())
                     result += requirement.trim() + "<br/>";
                 result += "</body></html>";
                 break;
-            case 2 : result = data.get(rowIndex).getCost()+"";
+            case 3 : result = data.get(rowIndex).getCost()+"";
                 break;
-            case 3 : result = data.get(rowIndex).getProductionTimeInDays()+"";
+            case 4 : result = data.get(rowIndex).getProductionTimeInDays()+"";
                 break;
-            case 4 : result = data.get(rowIndex).getQuantity()+"";
+            case 5 : result = data.get(rowIndex).getQuantity()+"";
+                break;
+            case 6: result = data.get(rowIndex).getManufacturer();
                 break;
         }
         return result;
@@ -81,6 +57,18 @@ public class SpecificationsModel extends AbstractTableModel {
     public void add(Specification row) {
         data.add(row);
         fireTableDataChanged();
+    }
+
+    public void remove(int rowIndex){
+        if(rowIndex < data.size()) {
+
+            data.remove(rowIndex);
+            fireTableDataChanged();
+        }
+    }
+
+    public int size(){
+        return data.size();
     }
 
 }
