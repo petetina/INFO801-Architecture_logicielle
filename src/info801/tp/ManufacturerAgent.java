@@ -1,10 +1,7 @@
 package info801.tp;
 
 import info801.tp.gui.ManufacturerAgentGUI;
-import info801.tp.model.Specification;
-
-import java.util.ArrayList;
-import java.util.List;
+import info801.tp.models.Specification;
 
 public class ManufacturerAgent extends Thread {
     private ManufacturerAgentGUI frame;
@@ -29,18 +26,34 @@ public class ManufacturerAgent extends Thread {
     public void run() {
         super.run();
 
-        while(true){
+        Thread getRFPThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while(true){
 
-            //We search for request for proposal
-            Specification spec = searchForRFP();
-            frame.addSpecification(spec);
-            /*
-            askToDesignAndWorkshop(spec);
-            boolean ok = false;
-            Specification counterFRP = waitForCounterRFP();
-            transmitCounterFRPToLogistic(counterFRP);*/
+                    //We search for request for proposal
+                    Specification spec = searchForRFP();
+                    frame.addSpecification(spec);
 
-        }
+                }
+            }
+        };
+
+        Thread getCounterProposalsThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while(true){
+                    Specification counterProposal = waitForCounterRFP();
+                    frame.addCounterSpecification(counterProposal);
+                }
+            }
+        };
+
+        getRFPThread.start();
+        getCounterProposalsThread.start();
+
     }
 
     public Specification searchForRFP() {
@@ -51,21 +64,13 @@ public class ManufacturerAgent extends Thread {
     }
 
     public void askToDesignAndWorkshop(Specification spec){
-        if(RandomGenerator.nextBool()){
-            List<String> requirements = new ArrayList<>();
-            requirements.add("requirement1");
-            requirements.add("requirement2");
-            requirements.add("requirement3");
-            spec.setRequirements(requirements);
-            spec = new Specification(spec.getCustomerName(),spec.getLogisticName(),requirements,RandomGenerator.nextInt(0,100),RandomGenerator.nextInt(30,60),RandomGenerator.nextInt(1,10));
-            Log.write(name, "ask to design and workshop the specification : " + spec);
-            try {
-                OpenJMS.getInstance().postMessageInTopic(spec.toString(), "specification" + getName());
-            }catch (Exception e){
-                Log.write(name,"Error while asking to design and workshop !");
-            }
-        }else
-            Log.write(name,"doesn't want to answer to "+spec.getLogisticName() + " !");
+
+        Log.write(name, "ask to design and workshop the specification : " + spec);
+        try {
+            OpenJMS.getInstance().postMessageInTopic(spec.toString(), "specification" + name);
+        }catch (Exception e){
+            Log.write(name,"Error while asking to design and workshop !");
+        }
     }
 
     public Specification waitForCounterRFP(){
@@ -74,15 +79,8 @@ public class ManufacturerAgent extends Thread {
         return Specification.parse(counterRFP);
     }
 
-    public void transmitCounterFRPToLogistic(Specification counterFRP) {
+    public void transmitCounterProposalToLogistic(Specification counterFRP) {
         Log.write(name," transmit a counter RFP to logistic " + counterFRP.getLogisticName() + " !");
-        String queueName = "transmitCounterRFPTo"+counterFRP.getLogisticName();
-
-        //We create a queue lazily
-        if(!OpenJMS.getInstance().destinationExists(queueName))
-            OpenJMS.getInstance().createQueue(queueName);
-
-        OpenJMS.getInstance().postMessageInQueue(getId() + ";;" + counterFRP.toString(),queueName);
-
+        OpenJMS.getInstance().postMessageInQueue(counterFRP.toString(),"transmitCounterRFPTo"+counterFRP.getLogisticName());
     }
 }

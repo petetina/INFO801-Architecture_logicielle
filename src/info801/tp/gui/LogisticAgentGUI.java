@@ -1,15 +1,14 @@
 package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
-import info801.tp.Tools;
-import info801.tp.model.State;
+import info801.tp.gui.adapters.NeedsModel;
+import info801.tp.gui.adapters.SpecificationsModel;
+import info801.tp.models.Specification;
+import info801.tp.models.State;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.event.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 public class LogisticAgentGUI extends JFrame implements ActionListener{
@@ -18,9 +17,12 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private JPanel mainPanel;
     private JTable needsTable;
     private NeedsModel needsModel;
+    private JTable counterProposalsTable;
+    private SpecificationsModel counterProposalsModel;
     private LogisticAgent logisticAgent;
     private JMenuItem menuItemSendRFP;
     private JMenuItem menuItemAskForMoreDetails;
+    private JMenuItem menuItemSendCounterProposalToCustomer;
 
     public LogisticAgentGUI(LogisticAgent logisticAgent){
         this.logisticAgent = logisticAgent;
@@ -62,6 +64,19 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
 
             }
         });
+
+        counterProposalsModel = new SpecificationsModel();
+        counterProposalsTable.setModel(counterProposalsModel);
+        counterProposalsTable.setRowHeight(100);
+        addMenuCounterProposals();
+        counterProposalsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                int row = counterProposalsTable.rowAtPoint(me.getPoint());
+                counterProposalsTable.clearSelection();
+                counterProposalsTable.setRowSelectionInterval(row,row);
+            }
+        });
     }
 
     private void addMenu(){
@@ -80,6 +95,18 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         needsTable.setComponentPopupMenu(popupMenu);
     }
 
+    private void addMenuCounterProposals(){
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemSendCounterProposalToCustomer = new JMenuItem("Send the counter proposal to customer");
+        menuItemSendCounterProposalToCustomer.addActionListener(this);
+        popupMenu.add(menuItemSendCounterProposalToCustomer);
+
+        // sets the popup menu for the table
+        counterProposalsTable.setComponentPopupMenu(popupMenu);
+    }
+
     public void addNeed(String need){
         String array[] = need.split(";");
         List<Object> data = new ArrayList<>();
@@ -90,45 +117,22 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         needsModel.add(data);
     }
 
-    private class NeedsModel extends AbstractTableModel {
-        private String[] headers = {"Date","Nom du client", "Besoin du client", "Etat"};
-        private List<List<Object>> data = new ArrayList<>();
-
-        @Override
-        public String getColumnName(int columnIndex) {
-            return headers[columnIndex];
-        }
-
-        @Override
-        public int getColumnCount() {
-            return headers.length;
-        }
-
-        @Override
-        public int getRowCount() {
-            return data.size();
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            return data.get(rowIndex).get(columnIndex);
-        }
-
-        private void add(List<Object> row) {
-            row.add(0, Tools.getCurrentTime());
-            data.add(row);
-            fireTableDataChanged();
-        }
-
+    public void addCounterProposal(Specification counterProposal) {
+        counterProposalsModel.add(counterProposal);
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemSendRFP) {
-            new CreateRFP(this,logisticAgent, (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1));
+            Integer quantity = Integer.valueOf((String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),3));
+            String customerName = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1);
+            new CreateRFP(this,logisticAgent, customerName,quantity);
         } else if (menu == menuItemAskForMoreDetails) {
             JOptionPane.showMessageDialog(null, "TODO !", "", JOptionPane.INFORMATION_MESSAGE);
+        }else if(menu == menuItemSendCounterProposalToCustomer){
+            JOptionPane.showMessageDialog(null, "Send counter proposal to customer TODO !", "", JOptionPane.INFORMATION_MESSAGE);
         }
     }
+
 }

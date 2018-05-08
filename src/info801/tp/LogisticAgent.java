@@ -1,11 +1,9 @@
 package info801.tp;
 
 import info801.tp.gui.LogisticAgentGUI;
-import info801.tp.model.Specification;
+import info801.tp.models.Specification;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class LogisticAgent extends Thread {
@@ -20,26 +18,53 @@ public class LogisticAgent extends Thread {
         name = "Logistic" + id;
         frame = new LogisticAgentGUI(this);
         OpenJMS.getInstance().createTopic("needsCustomers"+name);
+        OpenJMS.getInstance().createQueue("transmitCounterRFPTo"+name);
         rfps = new HashMap<>();
     }
 
     @Override
     public void run() {
         super.run();
+
+        Thread customersNeedsThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while(true){
+                    String need = listenCustomersNeeds();
+                    frame.addNeed(need);
+                }
+            }
+        };
+        customersNeedsThread.start();
+
+        Thread counterProposalsThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while(true){
+                    Specification counterProposal = listenCounterProposals();
+                    frame.addCounterProposal(counterProposal);
+                }
+            }
+        };
+
+        counterProposalsThread.start();
+        /*
         while(true){
             String need = listenCustomersNeeds();
             frame.addNeed(need);
 
-            /*
+
             List<String> requirements = new ArrayList<>();
             requirements.add("hello");
             requirements.add("it's not a good requirement");
             Specification specification = new Specification(name, requirements,RandomGenerator.nextInt(0,100),RandomGenerator.nextInt(30,60),RandomGenerator.nextInt(1,10));
             makeARequestForProposal(specification.toString());
-            */
+
             //Now we are waiting for manufacturers responses during 5 seconds and send to customer
             //waitForResponsesAndSendToCustomer(5);
-        }
+        }*/
     }
 
     @Override
@@ -69,10 +94,16 @@ public class LogisticAgent extends Thread {
             e.printStackTrace();
         }
     }
-/*
+
+    public Specification listenCounterProposals(){
+        String counterProposalString = OpenJMS.getInstance().receiveMessageFromQueue("transmitCounterRFPTo"+name);
+        return Specification.parse(counterProposalString);
+    }
+
+    /*
     public void waitForResponsesAndSendToCustomer(int deadLine) {
         List<Specification> result = new ArrayList<>();
-        Log.write(name + " wait for responses !");
+        Log.write(name," wait for responses !");
         OpenJMS.getInstance().receiveAsyncMessageFromTopic("transmitCounterRFPTo"+name, new ResponsesReceiver());
         wait(deadLine);
 
@@ -82,10 +113,10 @@ public class LogisticAgent extends Thread {
             message += rfps.get(manufacturerId).toString() + "|";
         }
         message = message.substring(0,message.length()-2);
-        Log.write(name + " sending " + rfps.size() + " counterRFP to customer 1");
+        Log.write(name ," sending " + rfps.size() + " counterRFP to customer 1");
         OpenJMS.getInstance().postMessageInQueue(message,"transmitCounterRFPToCustomer1");
-    }
-
+    }*/
+/*
     private class ResponsesReceiver implements MessageListener {
 
         public void onMessage(Message message) {

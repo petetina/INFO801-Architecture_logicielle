@@ -1,7 +1,7 @@
 package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
-import info801.tp.model.Specification;
+import info801.tp.models.Specification;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -15,11 +15,12 @@ public class CreateRFP extends JFrame{
     private JTextArea txtRequirements;
     private JPanel mainPanel;
     private JTextField txtCost;
-    private JTextField txtQuantity;
     private JTextField txtProductionTime;
     private JButton btnSendRFP;
+    private JLabel lblQuantity;
 
-    public CreateRFP(JFrame parent, LogisticAgent logisticAgent, String customerName){
+    public CreateRFP(JFrame parent, LogisticAgent logisticAgent, String customerName, int quantity){
+        lblQuantity.setText(quantity+"");
         setSize(400,250);
         setContentPane(mainPanel);
         setLocationRelativeTo(parent);
@@ -35,7 +36,6 @@ public class CreateRFP extends JFrame{
                 {
                     Double cost = Double.parseDouble(txtCost.getText());
                     int productionTimeInDays = Integer.parseInt(txtProductionTime.getText());
-                    int quantity = Integer.parseInt(txtQuantity.getText());
                     Specification specification = new Specification(customerName,"Logistic"+logisticAgent.getId(),getRequirements(),cost,productionTimeInDays,quantity);
 
                     logisticAgent.makeARequestForProposal(specification);
@@ -58,14 +58,12 @@ public class CreateRFP extends JFrame{
     private boolean formIsValid(){
         return !txtCost.getText().isEmpty()
                 && !txtProductionTime.getText().isEmpty()
-                && !txtQuantity.getText().isEmpty()
                 && txtRequirements.getText().split(";").length >= 1;
     }
 
     private void addCheckFieldsListener(){
         addNumericCheck(txtCost,false);
         addNumericCheck(txtProductionTime, true);
-        addNumericCheck(txtQuantity, true);
     }
 
     private void addNumericCheck(JTextField jTextField, boolean integerOnly){

@@ -15,6 +15,7 @@ public class CustomerAgentGUI extends JFrame{
     private JTextArea needTxt;
     private JTextField logisticNameTxt;
     private JButton sendNeedBtn;
+    private JSpinner txtQuantity;
 
     public CustomerAgentGUI(final CustomerAgent customerAgent){
 
@@ -42,7 +43,7 @@ public class CustomerAgentGUI extends JFrame{
             public void actionPerformed(ActionEvent e) {
                 if(!needTxt.getText().isEmpty() && !logisticNameTxt.getText().isEmpty()) {
                     try {
-                        customerAgent.askToLogistic(Integer.valueOf(logisticNameTxt.getText()), needTxt.getText());
+                        customerAgent.askToLogistic(Integer.valueOf(logisticNameTxt.getText()), needTxt.getText(), (int)txtQuantity.getValue());
                     } catch (Exception exception) {
                         exception.printStackTrace();
                         JOptionPane.showMessageDialog(null, "Le maitre d'oeuvre n'existe pas !", "Erreur", JOptionPane.ERROR_MESSAGE);

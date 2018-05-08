@@ -1,7 +1,7 @@
 package info801.tp;
 
 import info801.tp.gui.CustomerAgentGUI;
-import info801.tp.model.Specification;
+import info801.tp.models.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,8 +33,8 @@ public class CustomerAgent extends Thread{
         }*/
     }
 
-    public void askToLogistic(int idLogistic, String need) throws Exception{
-        OpenJMS.getInstance().postMessageInTopic(name + ";" + need, "needsCustomersLogistic"+idLogistic);
+    public void askToLogistic(int idLogistic, String need, int quantity) throws Exception{
+        OpenJMS.getInstance().postMessageInTopic(name + ";" + need + ";" + quantity, "needsCustomersLogistic"+idLogistic);
     }
 
     public List<Specification> waitForPropositions(){

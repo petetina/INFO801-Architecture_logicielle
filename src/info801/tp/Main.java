@@ -14,6 +14,9 @@ public class Main {
 
             CustomerAgent customerAgent1 = new CustomerAgent(1);
 
+            DesignAndWorkShopAgent designAndWorkShopAgent1 = new DesignAndWorkShopAgent(1);
+            //DesignAndWorkShopAgent designAndWorkShopAgent2 = new DesignAndWorkShopAgent(2);
+
             customerAgent1.start();
             //customerAgent2.start();
 
@@ -21,6 +24,10 @@ public class Main {
 
             manufacturerAgent1.start();
             manufacturerAgent2.start();
+
+            designAndWorkShopAgent1.start();
+            //designAndWorkShopAgent2.start();
+
         }catch(Exception e){
             System.out.println("Merci d'ouvrir OpenJMS");
         }

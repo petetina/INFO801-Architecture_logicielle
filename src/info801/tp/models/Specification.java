@@ -1,4 +1,4 @@
-package info801.tp.model;
+package info801.tp.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +58,22 @@ public class Specification {
 
     public void setCost(double cost) {
         this.cost = cost;
+    }
+
+    public void setLogisticName(String logisticName) {
+        this.logisticName = logisticName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public void setProductionTimeInDays(int productionTimeInDays) {
+        this.productionTimeInDays = productionTimeInDays;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
     @Override
