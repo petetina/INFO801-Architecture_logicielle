@@ -62,7 +62,6 @@ public final class OpenJMS {
                 }
             }
 
-            createTopic("requestsForProposal");
         }catch(JMSException e){
             System.out.println("Failed to initialized OpenJMS");
         }

@@ -1,7 +1,6 @@
 package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
-import info801.tp.OpenJMS;
 import info801.tp.RandomGenerator;
 import info801.tp.gui.adapters.NeedsModel;
 import info801.tp.gui.adapters.SpecificationsModel;
@@ -9,7 +8,10 @@ import info801.tp.models.Specification;
 import info801.tp.models.State;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,8 +135,17 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         if(!allProposals.isEmpty())
             allProposals = allProposals.substring(0,allProposals.length()-2);
 
-        OpenJMS.getInstance().postMessageInQueue(allProposals,"transmitCounterRFPTo"+customerId);
-        JOptionPane.showMessageDialog(null, projectId + "," + customerId + "Counter proposals has been sent to customer !", "", JOptionPane.INFORMATION_MESSAGE);
+        logisticAgent.transmitCounterRFPToCustomer(allProposals,customerId);
+        JOptionPane.showMessageDialog(null, "Counter proposals has been sent to customer !", "", JOptionPane.INFORMATION_MESSAGE);
+
+    }
+
+    public void removeCounterProposal(Specification proposal) {
+        counterProposalsModel.removeSpecification(proposal);
+    }
+
+    public void removeOtherCounterProposals(Specification counterProposal) {
+        counterProposalsModel.removeOtherCounterProposals(counterProposal);
     }
 
     @Override
@@ -155,4 +166,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         }
     }
 
+    public boolean hasNoMoreCounterProposals(String id) {
+        return counterProposalsModel.countProposalForProject(id) == 0;
+    }
+
+    public void updateNeedState(String id, State newState) {
+        needsModel.updateNeedState(id,newState);
+    }
 }

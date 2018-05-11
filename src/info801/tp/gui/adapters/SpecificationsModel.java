@@ -67,6 +67,55 @@ public class SpecificationsModel extends AbstractTableModel {
         }
     }
 
+    public int countProposalForProject(String projectId){
+        int i = 0;
+        int res = 0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(projectId))
+                res ++;
+            i++;
+        }
+        return res;
+    }
+
+    public void removeSpecificationsFromProjectId(String projectId){
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(projectId)) {
+                data.remove(i);
+            }else
+                i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public void removeOtherCounterProposals(Specification specification) {
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(specification.getId()) && !data.get(i).equals(specification)) {
+                data.remove(i);
+            }else
+                i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public void removeSpecification(Specification proposal){
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).equals(proposal)) {
+                String res = "";
+                for(String s : data.get(i).getRequirements())
+                    res += s + ";";
+                System.out.println("Removed : "+res);
+                data.remove(i);
+                break;
+            }else
+                i++;
+        }
+        fireTableDataChanged();
+    }
+
     public int size(){
         return data.size();
     }

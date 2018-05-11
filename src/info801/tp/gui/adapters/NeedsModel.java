@@ -1,6 +1,7 @@
 package info801.tp.gui.adapters;
 
 import info801.tp.Tools;
+import info801.tp.models.State;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -36,4 +37,23 @@ public class NeedsModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
+    private int findNeedByProjectId(String id) {
+        int i= 0;
+        int res = -1;
+        while(i<data.size()){
+            String currentId = (String)(data.get(i).get(1));
+            if(currentId.equals(id))
+                return i;
+            i++;
+        }
+        return -1;
+    }
+
+    public void updateNeedState(String id, State newState) {
+        int rowIndex = findNeedByProjectId(id);
+        System.out.println("updateNeedState"+rowIndex);
+        data.get(rowIndex).set(headers.length-1,newState.toString());
+        System.out.println("updateNeedState"+data.get(rowIndex).get(headers.length-1));
+        fireTableDataChanged();
+    }
 }

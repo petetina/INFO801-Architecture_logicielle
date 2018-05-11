@@ -66,6 +66,10 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
         specificationsModel.add(specification);
     }
 
+    public void removeProposalFromProjectId(String projectId) {
+        specificationsModel.removeSpecificationsFromProjectId(projectId);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         JMenuItem menu = (JMenuItem) event.getSource();
@@ -75,6 +79,5 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(null,"Counter proposal sent to manufacturer "+designAndWorkShopAgent.getId(), "", JOptionPane.INFORMATION_MESSAGE);
         }
     }
-
 
 }

@@ -50,6 +50,10 @@ public class CustomerAgent extends Thread{
     }
 
     public void notifyRejectedProposal(Specification proposal) {
-        OpenJMS.getInstance().postMessageInQueue(proposal.toString(),"rejectedProposals"+proposal.getLogisticName());
+        OpenJMS.getInstance().postMessageInQueue(proposal.toString()+";;false","opinionProposals"+proposal.getLogisticName());
+    }
+
+    public void notifyAcceptedProposal(Specification proposal){
+        OpenJMS.getInstance().postMessageInQueue(proposal.toString() + ";;true","opinionProposals"+proposal.getLogisticName());
     }
 }

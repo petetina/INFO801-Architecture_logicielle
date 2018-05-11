@@ -1,7 +1,7 @@
 package info801.tp.models;
 
 public enum State {
-    ENVOYE, EN_ATTENTE;
+    EN_ATTENTE, ACCEPTE, REJETE;
 
 
     @Override

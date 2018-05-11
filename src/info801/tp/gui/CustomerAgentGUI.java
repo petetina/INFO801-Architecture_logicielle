@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class CustomerAgentGUI extends JFrame implements ActionListener{
     private CustomerAgent customerAgent;
@@ -67,6 +66,7 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
     public void populate(){
         proposalsModel = new SpecificationsModel();
         proposalsTable.setModel(proposalsModel);
+        proposalsTable.setRowHeight(100);
         addMenu();
         proposalsTable.addMouseListener(new MouseAdapter() {
             @Override
@@ -103,33 +103,18 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
 
     private void rejectProposal(int rowIndex){
         Specification proposal = proposalsModel.data.get(rowIndex);
-        String id = proposal.getId();
 
-        //Remove only this proposal
-        proposalsModel.remove(rowIndex);
         customerAgent.notifyRejectedProposal(proposal);
-        //If there is no more proposal,
-        //tell logistic to send again a rfp
-        List<Specification> proposalsForTheSameProject = proposalsModel.data.stream().filter(specification -> specification.getId().equals(id) ).collect(Collectors.toList());
-        if(proposalsForTheSameProject.isEmpty()){
-
-        }
+        proposalsModel.remove(rowIndex);
     }
 
     private void acceptProposal(int rowIndex){
-        String id = proposalsModel.data.get(rowIndex).getId();
-        //Delete all other proposals linked to the project id
-        int i = 0;
-
-            while(i<proposalsModel.size()){
-
-                if(proposalsModel.data.get(i).getId().equals(id))
-                    proposalsTable.remove(i);
-                else
-                    i++;
-        }
-        //Remove this proposal of the list
+        Specification specification = proposalsModel.data.get(rowIndex);
         //Tell logistic that proposal i is accepted
+        customerAgent.notifyAcceptedProposal(specification);
+        //Remove all proposals
+        proposalsModel.removeSpecificationsFromProjectId(specification.getId());
+
     }
 
     @Override

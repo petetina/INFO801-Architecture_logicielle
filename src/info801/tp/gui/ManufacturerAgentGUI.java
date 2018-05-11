@@ -123,4 +123,12 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(null, "Counter proposal transmitted to logistic " + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
         }
     }
+
+    public void removeProposals(String projectId) {
+        specificationsModel.removeSpecificationsFromProjectId(projectId);
+    }
+
+    public void removeCounterProposals(String projectId) {
+        counterProposalsModel.removeSpecificationsFromProjectId(projectId);
+    }
 }

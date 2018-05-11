@@ -122,4 +122,22 @@ public class Specification {
     public void addRequirement(String s) {
         requirements.add(s);
     }
+
+    public boolean equals(Specification other) {
+        boolean result = id.equals(other.getId())
+                && logisticName.equals(other.getLogisticName())
+                && customerName.equals(other.getCustomerName())
+                && cost == other.getCost()
+                && productionTimeInDays == other.getProductionTimeInDays()
+                && quantity == other.quantity
+                && (manufacturer.equals(other.getManufacturer()) || manufacturer.equals("Non défini"));
+
+        if(requirements.size() == other.getRequirements().size()){
+            for(int i=0; result && i<requirements.size(); i++)
+                result = result && requirements.get(i).equals(other.getRequirements().get(i));
+        }else
+            result = false;
+
+        return result;
+    }
 }
