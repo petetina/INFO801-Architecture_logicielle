@@ -1,26 +1,23 @@
 package info801.tp.gui;
 
 import info801.tp.ManufacturerAgent;
-import info801.tp.Tools;
-import info801.tp.gui.adapters.SpecificationsModel;
+import info801.tp.gui.adapters.SpecificationsWithStateModel;
 import info801.tp.models.Specification;
+import info801.tp.models.State;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class ManufacturerAgentGUI extends JFrame implements ActionListener {
     private ManufacturerAgent manufacturerAgent;
     private JPanel mainPanel;
     private JTable specificationsTable;
     private JTable counterProposalsTable;
-    private SpecificationsModel specificationsModel;
-    private SpecificationsModel counterProposalsModel;
+    private SpecificationsWithStateModel specificationsModel;
+    private SpecificationsWithStateModel counterProposalsModel;
     private JMenuItem menuItemAnalyse;
     private JMenuItem menuItemSendCounterProposalToLogistic;
 
@@ -56,7 +53,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
 
     private void populate(){
         //For specifications
-        specificationsModel = new SpecificationsModel();
+        specificationsModel = new SpecificationsWithStateModel();
         specificationsTable.setModel(specificationsModel);
         specificationsTable.setRowHeight(100);
 
@@ -72,7 +69,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         });
 
         //For counter proposals
-        counterProposalsModel = new SpecificationsModel();
+        counterProposalsModel = new SpecificationsWithStateModel();
         counterProposalsTable.setModel(counterProposalsModel);
         counterProposalsTable.setRowHeight(100);
 
@@ -130,5 +127,13 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
 
     public void removeCounterProposals(String projectId) {
         counterProposalsModel.removeSpecificationsFromProjectId(projectId);
+    }
+
+    public void updateCounterProposalState(Specification proposal, State accepte) {
+        counterProposalsModel.changeState(proposal,accepte);
+    }
+
+    public void removeOtherCounterProposals(Specification proposal) {
+        counterProposalsModel.removeOtherCounterProposals(proposal);
     }
 }

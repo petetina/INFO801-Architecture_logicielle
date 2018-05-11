@@ -2,13 +2,14 @@ package info801.tp.gui.adapters;
 
 import info801.tp.Tools;
 import info801.tp.models.Specification;
+import info801.tp.models.State;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpecificationsModel extends AbstractTableModel {
-    protected String[] headers = {"Date","Numéro de commande","Requirements", "Coût (en €)", "Nombre de jours de prod", "Quantité", "Fabricant"};
+public class SpecificationsWithStateModel extends AbstractTableModel {
+    protected String[] headers = {"Date","Numéro de commande","Requirements", "Coût (en €)", "Nombre de jours de prod", "Quantité", "Etat"};
     public List<Specification> data = new ArrayList<>();
 
     @Override
@@ -48,7 +49,7 @@ public class SpecificationsModel extends AbstractTableModel {
                 break;
             case 5 : result = data.get(rowIndex).getQuantity()+"";
                 break;
-            case 6: result = data.get(rowIndex).getManufacturer();
+            case 6: result = data.get(rowIndex).getState().toString();
                 break;
         }
         return result;
@@ -113,6 +114,23 @@ public class SpecificationsModel extends AbstractTableModel {
             }else
                 i++;
         }
+        fireTableDataChanged();
+    }
+
+    protected int findSpecificationByProjectId(Specification proposal){
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).equals(proposal)) {
+                return i;
+            }else
+                i++;
+        }
+        return -1;
+    }
+
+    public void changeState(Specification proposal, State newState){
+        int rowIndex = findSpecificationByProjectId(proposal);
+        data.get(rowIndex).setState(newState);
         fireTableDataChanged();
     }
 

@@ -2,7 +2,7 @@ package info801.tp.gui;
 
 import info801.tp.DesignAndWorkShopAgent;
 import info801.tp.gui.adapters.EditableSpecificationsModel;
-import info801.tp.gui.adapters.SpecificationsModel;
+import info801.tp.gui.adapters.SpecificationsWithFabricantModel;
 import info801.tp.models.Specification;
 
 import javax.swing.*;
@@ -74,7 +74,7 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent event) {
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemMakeACounterRFP) {
-            SpecificationsModel model = (SpecificationsModel)specificationsTable.getModel();
+            EditableSpecificationsModel model = (EditableSpecificationsModel) specificationsTable.getModel();
             designAndWorkShopAgent.makeACounterProposal(model.data.get(specificationsTable.getSelectedRow()));
             JOptionPane.showMessageDialog(null,"Counter proposal sent to manufacturer "+designAndWorkShopAgent.getId(), "", JOptionPane.INFORMATION_MESSAGE);
         }

@@ -1,7 +1,7 @@
 package info801.tp.gui;
 
 import info801.tp.CustomerAgent;
-import info801.tp.gui.adapters.SpecificationsModel;
+import info801.tp.gui.adapters.SpecificationsWithFabricantModel;
 import info801.tp.models.Specification;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
     private JButton sendNeedBtn;
     private JSpinner txtQuantity;
     private JTable proposalsTable;
-    private SpecificationsModel proposalsModel;
+    private SpecificationsWithFabricantModel proposalsModel;
     private JMenuItem menuItemAcceptProposal;
     private JMenuItem menuItemRejectProposal;
 
@@ -64,7 +64,7 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
     }
 
     public void populate(){
-        proposalsModel = new SpecificationsModel();
+        proposalsModel = new SpecificationsWithFabricantModel();
         proposalsTable.setModel(proposalsModel);
         proposalsTable.setRowHeight(100);
         addMenu();

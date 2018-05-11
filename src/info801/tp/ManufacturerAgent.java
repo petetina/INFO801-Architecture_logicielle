@@ -6,6 +6,8 @@ import info801.tp.models.Specification;
 import java.util.ArrayList;
 import java.util.List;
 
+import static info801.tp.models.State.ACCEPTE;
+
 public class ManufacturerAgent extends Thread {
     private ManufacturerAgentGUI frame;
     private String name;
@@ -111,14 +113,15 @@ public class ManufacturerAgent extends Thread {
     private void listenOpinionProposal() {
         String opinionAndProposal = OpenJMS.getInstance().receiveMessageFromQueue("opinionProposals"+name);
         String array[] = opinionAndProposal.split(";;");
-        String projectId = array[0];
+        Specification proposal = Specification.parse(array[0]);
         boolean opinion = Boolean.parseBoolean(array[1]);
+        frame.removeProposals(proposal.getId());
         if(opinion){
-
+            frame.updateCounterProposalState(proposal,ACCEPTE);
+            frame.removeOtherCounterProposals(proposal);
         }else {
-            frame.removeProposals(projectId);
-            frame.removeCounterProposals(projectId);
-            OpenJMS.getInstance().postMessageInQueue(projectId+";;false", "opinionProposalsDesignAndWorkShop" + getId());
+            frame.removeCounterProposals(proposal.getId());
         }
+        OpenJMS.getInstance().postMessageInQueue(proposal.getId()+";;false", "opinionProposalsDesignAndWorkShop" + getId());
     }
 }

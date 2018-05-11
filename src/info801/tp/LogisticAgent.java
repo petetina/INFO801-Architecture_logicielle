@@ -110,7 +110,7 @@ public class LogisticAgent extends Thread {
             {
                 String manufacturerName = "Manufacturer"+manufacturerAgent.getId();
                 if(!proposal.getManufacturer().equals(manufacturerName))
-                    OpenJMS.getInstance().postMessageInQueue(proposal.getId() + ";;false", "opinionProposals"+manufacturerName);
+                    OpenJMS.getInstance().postMessageInQueue(proposal + ";;false", "opinionProposals"+manufacturerName);
             }
         }else {
             frame.removeCounterProposal(proposal);
@@ -118,7 +118,7 @@ public class LogisticAgent extends Thread {
                 frame.updateNeedState(proposal.getId(), info801.tp.models.State.REJETE);
             }
         }
-        OpenJMS.getInstance().postMessageInQueue(proposal.getId() + ";;" + array[1], "opinionProposals" + proposal.getManufacturer());
+        OpenJMS.getInstance().postMessageInQueue(proposal + ";;" + array[1], "opinionProposals" + proposal.getManufacturer());
     }
 
     public void transmitCounterRFPToCustomer(String allProposals, String customerId){

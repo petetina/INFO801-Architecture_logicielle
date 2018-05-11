@@ -3,7 +3,7 @@ package info801.tp.gui;
 import info801.tp.LogisticAgent;
 import info801.tp.RandomGenerator;
 import info801.tp.gui.adapters.NeedsModel;
-import info801.tp.gui.adapters.SpecificationsModel;
+import info801.tp.gui.adapters.SpecificationsWithFabricantModel;
 import info801.tp.models.Specification;
 import info801.tp.models.State;
 
@@ -22,7 +22,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private JTable needsTable;
     private NeedsModel needsModel;
     private JTable counterProposalsTable;
-    private SpecificationsModel counterProposalsModel;
+    private SpecificationsWithFabricantModel counterProposalsModel;
     private LogisticAgent logisticAgent;
     private JMenuItem menuItemSendRFP;
     private JMenuItem menuItemAskForMoreDetails;
@@ -69,7 +69,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             }
         });
 
-        counterProposalsModel = new SpecificationsModel();
+        counterProposalsModel = new SpecificationsWithFabricantModel();
         counterProposalsTable.setModel(counterProposalsModel);
         counterProposalsTable.setRowHeight(100);
         addMenuCounterProposals();

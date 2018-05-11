@@ -5,7 +5,7 @@ import info801.tp.models.Specification;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EditableSpecificationsModel extends SpecificationsModel {
+public class EditableSpecificationsModel extends SpecificationsWithStateModel {
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {

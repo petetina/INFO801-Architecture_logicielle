@@ -15,9 +15,10 @@ public class Specification {
     private int productionTimeInDays;
     private int quantity;
     private String manufacturer = "Non défini";
+    private State state;
 
     public Specification(){
-
+        state = State.EN_ATTENTE;
     }
 
     public Specification(String customerName, String logisticName, List<String> requirements, double cost, int productionTimeInDays, int quantity) {
@@ -27,6 +28,7 @@ public class Specification {
         this.cost = cost;
         this.productionTimeInDays = productionTimeInDays;
         this.quantity = quantity;
+        this.state = State.EN_ATTENTE;
     }
 
     public String getId() {
@@ -93,9 +95,17 @@ public class Specification {
         this.quantity = quantity;
     }
 
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
     @Override
     public String toString() {
-        return id + ";" + requirements + ";" + cost + ";" + productionTimeInDays + ";" + quantity + ";" + logisticName + ";" + customerName+";"+manufacturer;
+        return id + ";" + requirements + ";" + cost + ";" + productionTimeInDays + ";" + quantity + ";" + logisticName + ";" + customerName+";"+manufacturer + ";" + state.toString();
     }
 
     public static Specification parse(String rfp){
@@ -116,6 +126,7 @@ public class Specification {
         specification.id = args[0];
 
         specification.manufacturer = args[7];
+        specification.state = State.valueOf(args[8]);
         return specification;
     }
 
