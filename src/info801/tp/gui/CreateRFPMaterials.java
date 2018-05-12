@@ -16,8 +16,8 @@ public class CreateRFPMaterials extends JFrame {
     private JButton createRFPMaterialsBtn;
     private LogisticAgent logisticAgent;
 
-    public CreateRFPMaterials(LogisticAgent logisticAgent, String projectId){
-        this.logisticAgent = logisticAgent;
+    public CreateRFPMaterials(LogisticAgentGUI logisticAgentGUI, String projectId){
+        this.logisticAgent = logisticAgentGUI.logisticAgent;
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -35,12 +35,13 @@ public class CreateRFPMaterials extends JFrame {
                 String needMaterial = materialNeedsTxt.getText().trim();
                 if(!needMaterial.isEmpty()){
                     try{
-                        MaterialNeed need = MaterialNeed.parse("\n\n\n\n" + needMaterial);
+                        MaterialNeed need = MaterialNeed.parse("\n\n\n\n\n" + needMaterial);
                         if(need != null)
                             logisticAgent.makeARFPMaterialToAllSuppliers(need, projectId);
                         else
                             throw new IllegalArgumentException();
-                        //update
+
+                        logisticAgentGUI.addMaterialNeedRFP(need);
                         dispose();
                     }catch (Exception exception){
                         JOptionPane.showMessageDialog(null, "Veuillez respecter le format pour chaque ligne : quantité; matériel", "Erreur de saisie !", JOptionPane.ERROR_MESSAGE);

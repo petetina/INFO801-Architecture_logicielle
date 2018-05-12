@@ -21,6 +21,7 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
     private MaterialNeedsModel materialNeedsDoneModel;
     private JMenuItem menuItemICan;
     private JMenuItem menuItemICant;
+    private int rowSelectedMaterialNeedsDoing = -1;
 
     public SupplierAgentGUI(SupplierAgent supplierAgent) {
         try {
@@ -50,17 +51,14 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
             @Override
             public void mousePressed(MouseEvent me) {
                 int row = materialNeedsDoingTable.rowAtPoint(me.getPoint());
+                rowSelectedMaterialNeedsDoing = row;
                 materialNeedsDoingTable.clearSelection();
                 materialNeedsDoingTable.setRowSelectionInterval(row,row);
                 StateMaterialNeed state = materialNeedsDoingModel.data.get(row).getState();
                 if(state.equals(StateMaterialNeed.EN_ATTENTE))
                     setMenuInStateWaiting();
-                else if(state.equals(StateMaterialNeed.REPONDU))
-                    setMenuInStateAnswered();
-                else if(state.equals(StateMaterialNeed.ACCEPTE))
-                    setMenuInStateAccepted();
-                else if(state.equals(StateMaterialNeed.REJETE))
-                    setMenuInStateRejected();
+                else
+                    materialNeedsDoingTable.setComponentPopupMenu(null);
             }
 
         });
@@ -86,17 +84,20 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
         materialNeedsDoingTable.setComponentPopupMenu(popupMenu);
     }
 
-    private void setMenuInStateAnswered() {
-    }
-
-    private void setMenuInStateAccepted() {
-    }
-
-    private void setMenuInStateRejected() {
-    }
-
     public void addMaterialNeed(MaterialNeed materialNeed) {
         materialNeedsDoingModel.add(materialNeed);
+    }
+
+    public void addMaterialNeedDone(MaterialNeed materialNeed) {
+        materialNeedsDoneModel.add(materialNeed);
+    }
+
+    public void updateMaterialNeedState(MaterialNeed materialNeed, StateMaterialNeed newState) {
+        materialNeedsDoingModel.updateNeedState(materialNeed,newState);
+    }
+
+    public void removeMaterialNeedsDoing(String id) {
+        materialNeedsDoingModel.removeMaterialNeeds(id);
     }
 
     @Override
@@ -104,10 +105,16 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
 
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemICan) {
-            //String projectId = (String) needsTable.getModel().getValueAt(needsTable.getSelectedRow(), 1);
-            //Integer quantity = Integer.val
-        }else if(menu == menuItemICant){
+            MaterialNeed materialNeed = materialNeedsDoingModel.data.get(rowSelectedMaterialNeedsDoing);
+            materialNeed.setState(StateMaterialNeed.ACCEPTE);
+            supplierAgent.answerMaterialNeedRFP(materialNeed);
+            updateMaterialNeedState(materialNeed,StateMaterialNeed.REPONDU);
 
+        }else if(menu == menuItemICant){
+            MaterialNeed materialNeed = materialNeedsDoingModel.data.get(rowSelectedMaterialNeedsDoing);
+            materialNeed.setState(StateMaterialNeed.REJETE);
+            supplierAgent.answerMaterialNeedRFP(materialNeed);
+            updateMaterialNeedState(materialNeed,StateMaterialNeed.REPONDU);
         }
     }
 }

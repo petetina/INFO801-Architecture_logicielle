@@ -2,10 +2,14 @@ package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
 import info801.tp.RandomGenerator;
+import info801.tp.gui.adapters.MaterialNeedsModel;
+import info801.tp.gui.adapters.MaterialNeedsWithSupplierModel;
 import info801.tp.gui.adapters.NeedsModel;
 import info801.tp.gui.adapters.SpecificationsWithFabricantModel;
+import info801.tp.models.MaterialNeed;
 import info801.tp.models.Specification;
 import info801.tp.models.State;
+import info801.tp.models.StateMaterialNeed;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,14 +27,20 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private NeedsModel needsModel;
     private JTable counterProposalsTable;
     private JTabbedPane tabbedPane;
+    private JTable materialNeedsTable;
+    private MaterialNeedsWithSupplierModel materialNeedsModel;
+    private JTable materialNeedRFPTable;
+    private MaterialNeedsModel materialNeedRFPModel;
     private SpecificationsWithFabricantModel counterProposalsModel;
-    private LogisticAgent logisticAgent;
+    public LogisticAgent logisticAgent;
     private JMenuItem menuItemSendRFP;
     private JMenuItem menuItemAskForMoreDetails;
     private JMenuItem menuItemSendCounterProposalToCustomer;
     private JMenuItem menuItemRFPSuppliers;
     private JMenuItem menuItemRFPTransporters;
+    private JMenuItem menuItemChooseSupplier;
     private int rowSelectedCounterProposal = -1;
+    private int rowSelectedMaterialNeeds = -1;
 
     public LogisticAgentGUI(LogisticAgent logisticAgent){
         try {
@@ -98,6 +108,41 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
                     setMenuCounterProposalsAccepted();
             }
         });
+
+        materialNeedsModel = new MaterialNeedsWithSupplierModel();
+        materialNeedsTable.setModel(materialNeedsModel);
+        materialNeedsTable.setRowHeight(100);
+        setMenuMaterialNeedsInStateAccepted();
+        materialNeedsTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent me) {
+                int row = materialNeedsTable.rowAtPoint(me.getPoint());
+                rowSelectedMaterialNeeds = row;
+                materialNeedsTable.setRowSelectionInterval(row,row);
+                materialNeedsTable.clearSelection();
+                StateMaterialNeed state = materialNeedsModel.data.get(row).getState();
+                if(state.equals(StateMaterialNeed.ACCEPTE))
+                    setMenuMaterialNeedsInStateAccepted();
+                else
+                    materialNeedsTable.setComponentPopupMenu(null);
+
+            }
+        });
+
+        materialNeedRFPModel = new MaterialNeedsModel();
+        materialNeedRFPTable.setModel(materialNeedRFPModel);
+    }
+
+    private void setMenuMaterialNeedsInStateAccepted() {
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemChooseSupplier = new JMenuItem("Choose this supplier");
+        menuItemChooseSupplier.addActionListener(this);
+        popupMenu.add(menuItemChooseSupplier);
+
+        // sets the popup menu for the table
+        materialNeedsTable.setComponentPopupMenu(popupMenu);
     }
 
     private void setMenu(){
@@ -193,6 +238,23 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         counterProposalsModel.updateSpecificationState(id,newState);
     }
 
+    public void addMaterialNeed(MaterialNeed materialNeed) {
+        materialNeedsModel.add(materialNeed);
+    }
+
+    public void addMaterialNeedRFP(MaterialNeed materialNeed) {
+        materialNeedRFPModel.add(materialNeed);
+    }
+
+    private void updateMaterialNeed(MaterialNeed materialNeed, StateMaterialNeed choisi) {
+        materialNeedsModel.removeOthers(materialNeed);
+        materialNeedsModel.updateNeedState(materialNeed,choisi);
+    }
+
+    private void removeMaterialNeedRFP(String id) {
+        materialNeedRFPModel.removeMaterialNeeds(id);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
 
@@ -209,10 +271,16 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             String customerId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),2);
             sendAllProposalsForProject(projectId,customerId);
         }else if(menu == menuItemRFPSuppliers){
-            new CreateRFPMaterials(logisticAgent, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
-            //MAJ
+            new CreateRFPMaterials(this, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
         }else if(menu == menuItemRFPTransporters){
 
+        }else if(menu == menuItemChooseSupplier){
+            MaterialNeed materialNeed = materialNeedsModel.data.get(rowSelectedMaterialNeeds);
+            logisticAgent.acceptMaterialNeedSupplier(materialNeed);
+            updateMaterialNeed(materialNeed,StateMaterialNeed.CHOISI);
+            removeMaterialNeedRFP(materialNeed.getId());
         }
     }
+
+
 }

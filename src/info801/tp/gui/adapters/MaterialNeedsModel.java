@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MaterialNeedsModel extends AbstractTableModel {
-    private String[] headers = {"Date","N° de commande","N° commande client","Nom du MO", "Materiels commandés","Etat"};
+    protected String[] headers = {"Date","N° de commande","N° commande client","Nom du MO", "Materiels commandés","Etat"};
     public List<MaterialNeed> data = new ArrayList<>();
 
     @Override
@@ -58,11 +58,10 @@ public class MaterialNeedsModel extends AbstractTableModel {
             return null;
     }
 
-    private int findNeedById(String id) {
+    private int findNeed(MaterialNeed materialNeed) {
         int i= 0;
         while(i<data.size()){
-            String currentId = data.get(i).getId();
-            if(currentId.equals(id))
+            if(data.get(i).equals(materialNeed))
                 return i;
             i++;
         }
@@ -74,9 +73,21 @@ public class MaterialNeedsModel extends AbstractTableModel {
         fireTableDataChanged();
     }
 
-    public void updateNeedState(String id, StateMaterialNeed newState) {
-        int rowIndex = findNeedById(id);
-        data.get(rowIndex).setState(newState);
-        fireTableDataChanged();
+    public void updateNeedState(MaterialNeed materialNeed, StateMaterialNeed newState) {
+        int rowIndex = findNeed(materialNeed);
+        if(rowIndex != -1) {
+            data.get(rowIndex).setState(newState);
+            fireTableDataChanged();
+        }
+    }
+
+    public void removeMaterialNeeds(String id) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(id))
+                data.remove(i);
+            else
+                i++;
+        }
     }
 }

@@ -21,6 +21,7 @@ public class Main {
 
             SupplierAgent supplierAgent = new SupplierAgent(1);
             SupplierAgent supplierAgent2 = new SupplierAgent(2);
+            SupplierAgent supplierAgent3 = new SupplierAgent(3);
 
             //Add manufacturer 1 and 2 to logistic1 's manufacturerList
             //And logistic to manufacturer
@@ -30,6 +31,7 @@ public class Main {
 
             //Unidirectional link !
             logisticAgent1.addSupplier(supplierAgent);
+            logisticAgent1.addSupplier(supplierAgent2);
 
             customerAgent1.start();
             //customerAgent2.start();
@@ -46,6 +48,7 @@ public class Main {
 
             supplierAgent.start();
             supplierAgent2.start();
+            supplierAgent3.start();
         }catch(Exception e){
             System.out.println("Merci d'ouvrir OpenJMS");
         }

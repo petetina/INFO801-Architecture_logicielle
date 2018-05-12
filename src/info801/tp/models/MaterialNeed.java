@@ -31,6 +31,7 @@ public class MaterialNeed {
     private String customerProjectId;
     private List<Data> datas;
     private String logisticName;
+    private String supplierName;
     private StateMaterialNeed state;
 
     public MaterialNeed(){
@@ -90,11 +91,19 @@ public class MaterialNeed {
         this.id = id;
     }
 
+    public String getSupplierName() {
+        return supplierName;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
+
     public static MaterialNeed parse(String data){
         MaterialNeed result = new MaterialNeed();
         String lines[] = data.split("\n");
 
-        if(lines.length>=4) {
+        if(lines.length>=5) {
             System.out.println("lines[0] = " + lines[0]);
             result.setId(lines[0]);
             System.out.println("lines[1] = " + lines[1]);
@@ -107,12 +116,9 @@ public class MaterialNeed {
                 result.setState(StateMaterialNeed.valueOf(lines[2]));
 
             result.setCustomerProjectId(lines[3]);
-
-            for (int i = 4; i < lines.length; i++) {
-                System.out.println("lines["+i+"] = " + lines[i]);
+            result.setSupplierName(lines[4]);
+            for (int i = 5; i < lines.length; i++) {
                 String array[] = lines[i].split(";");
-                System.out.println("array[0] = " + array[0]);
-                System.out.println("array[1] = " + array[1]);
                 Double quantity = Double.valueOf(array[0]);
                 Material material = Material.find(array[1]);
 
@@ -126,9 +132,26 @@ public class MaterialNeed {
         return result;
     }
 
+    public boolean equals(MaterialNeed other) {
+        boolean result = id.equals(other.getId())
+                && customerProjectId.equals(other.getCustomerProjectId())
+                && logisticName.equals(other.getLogisticName())
+                && (supplierName.equals(other.getSupplierName()) || supplierName.equals(""));
+
+        if(datas.size() == other.datas.size()) {
+            for (int i = 0; i < datas.size(); i++) {
+                result = result
+                        && (datas.get(i).getQuantity() == other.datas.get(i).getQuantity())
+                        && (datas.get(i).getMaterial().equals(other.datas.get(i).getMaterial()));
+            }
+        }else
+            return false;
+        return result;
+    }
+
     @Override
     public String toString(){
-        String result = id + "\n" + logisticName + "\n" + state.toString() + "\n" + customerProjectId + "\n";
+        String result = id + "\n" + logisticName + "\n" + state.toString() + "\n" + customerProjectId + "\n" + supplierName + "\n";
         for(Data data : datas)
             result += data.getQuantity() + ";" + data.getMaterial().toString()+"\n";
         return result.trim();

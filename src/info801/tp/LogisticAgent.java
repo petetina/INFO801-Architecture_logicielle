@@ -26,6 +26,7 @@ public class LogisticAgent extends Thread {
         OpenJMS.getInstance().createTopic("requestsForProposal"+name);
         OpenJMS.getInstance().createQueue("transmitCounterRFPTo"+name);
         OpenJMS.getInstance().createQueue("opinionProposals"+name);
+        OpenJMS.getInstance().createQueue("materialNeeds"+name);
     }
 
     @Override
@@ -67,6 +68,17 @@ public class LogisticAgent extends Thread {
             }
         };
         opinionsProposalsThread.start();
+
+        Thread materialNeedsThread = new Thread(){
+            @Override
+            public void run() {
+                super.run();
+                while(true){
+                    listenMaterialNeeds();
+                }
+            }
+        };
+        materialNeedsThread.start();
     }
 
     @Override
@@ -139,6 +151,22 @@ public class LogisticAgent extends Thread {
         needMaterial.setCustomerProjectId(projectId);
         for(SupplierAgent supplierAgent : supplierAgents)
             OpenJMS.getInstance().postMessageInQueue(needMaterial.toString(),"materialNeedsSupplier"+supplierAgent.getId());
+    }
+
+    public void listenMaterialNeeds(){
+        String materialNeedString = OpenJMS.getInstance().receiveMessageFromQueue("materialNeeds"+name);
+        MaterialNeed materialNeed = MaterialNeed.parse(materialNeedString);
+        frame.addMaterialNeed(materialNeed);
+    }
+
+    public void acceptMaterialNeedSupplier(MaterialNeed materialNeed){
+        for(SupplierAgent supplierAgent : supplierAgents)
+        {
+            if(!materialNeed.getSupplierName().equals("Supplier"+supplierAgent.getId()))
+                OpenJMS.getInstance().postMessageInQueue(materialNeed.toString() + ";;false","materialNeedsResponsesSupplier"+supplierAgent.getId());
+            else
+                OpenJMS.getInstance().postMessageInQueue(materialNeed.toString() + ";;true","materialNeedsResponsesSupplier"+supplierAgent.getId());
+        }
     }
 
 }
