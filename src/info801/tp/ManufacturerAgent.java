@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static info801.tp.models.State.ACCEPTE;
+import static info801.tp.models.State.EN_PRODUCTION;
 
 public class ManufacturerAgent extends Thread {
     private ManufacturerAgentGUI frame;
@@ -117,7 +118,7 @@ public class ManufacturerAgent extends Thread {
         boolean opinion = Boolean.parseBoolean(array[1]);
         frame.removeProposals(proposal.getId());
         if(opinion){
-            frame.updateCounterProposalState(proposal,ACCEPTE);
+            frame.updateCounterProposalState(proposal,EN_PRODUCTION);
             frame.removeOtherCounterProposals(proposal);
         }else {
             frame.removeCounterProposals(proposal.getId());

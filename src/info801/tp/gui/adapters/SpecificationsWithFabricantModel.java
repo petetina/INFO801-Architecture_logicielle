@@ -2,10 +2,12 @@ package info801.tp.gui.adapters;
 
 import info801.tp.Tools;
 import info801.tp.models.Specification;
+import info801.tp.models.State;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpecificationsWithFabricantModel extends AbstractTableModel {
     protected String[] headers = {"Date","Numéro de commande","Requirements", "Coût (en €)", "Nombre de jours de prod", "Quantité", "Fabricant"};
@@ -120,4 +122,15 @@ public class SpecificationsWithFabricantModel extends AbstractTableModel {
         return data.size();
     }
 
+    public void updateSpecificationState(String id, State newState) {
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(id)) {
+                data.get(i).setState(newState);
+                break;
+            }else
+                i++;
+        }
+        fireTableDataChanged();
+    }
 }

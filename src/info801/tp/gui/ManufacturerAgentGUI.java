@@ -20,8 +20,15 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
     private SpecificationsWithStateModel counterProposalsModel;
     private JMenuItem menuItemAnalyse;
     private JMenuItem menuItemSendCounterProposalToLogistic;
+    private JMenuItem menuItemFinishedProduction;
 
     public ManufacturerAgentGUI(ManufacturerAgent manufacturerAgent){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.manufacturerAgent = manufacturerAgent;
         setSize(890,360);
         setLocation(480,(int)(manufacturerAgent.getId()-1)*getHeight());
@@ -57,7 +64,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         specificationsTable.setModel(specificationsModel);
         specificationsTable.setRowHeight(100);
 
-        addMenuSpecifications();
+        setMenuSpecifications();
         specificationsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent me) {
@@ -73,18 +80,36 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         counterProposalsTable.setModel(counterProposalsModel);
         counterProposalsTable.setRowHeight(100);
 
-        addMenuCounterProposals();
+        setMenuCounterProposals();
         counterProposalsTable.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mousePressed(MouseEvent me) {
                 int row = counterProposalsTable.rowAtPoint(me.getPoint());
                 counterProposalsTable.clearSelection();
                 counterProposalsTable.setRowSelectionInterval(row,row);
+                State state = counterProposalsModel.data.get(row).getState();
+                if(state.equals(State.EN_PRODUCTION)){
+                    setMenuCounterProposalsProductionState();
+                }else
+                    setMenuCounterProposals();
             }
         });
     }
 
-    private void addMenuSpecifications(){
+    private void setMenuCounterProposalsProductionState(){
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemFinishedProduction = new JMenuItem("Production finished !");
+        menuItemFinishedProduction.addActionListener(this);
+        popupMenu.add(menuItemFinishedProduction);
+
+        // sets the popup menu for the table
+        counterProposalsTable.setComponentPopupMenu(popupMenu);
+    }
+
+    private void setMenuSpecifications(){
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
@@ -96,7 +121,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         specificationsTable.setComponentPopupMenu(popupMenu);
     }
 
-    private void addMenuCounterProposals(){
+    private void setMenuCounterProposals(){
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
@@ -106,19 +131,6 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
 
         // sets the popup menu for the table
         counterProposalsTable.setComponentPopupMenu(popupMenu);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent event) {
-        JMenuItem menu = (JMenuItem) event.getSource();
-        if (menu == menuItemAnalyse) {
-            manufacturerAgent.askToDesignAndWorkshop(specificationsModel.data.get(specificationsTable.getSelectedRow()));
-            JOptionPane.showMessageDialog(null, "Sent for analysing !", "", JOptionPane.INFORMATION_MESSAGE);
-        }else if(menu == menuItemSendCounterProposalToLogistic){
-            Specification counterProposal = counterProposalsModel.data.get(counterProposalsTable.getSelectedRow());
-            manufacturerAgent.transmitCounterProposalToLogistic(counterProposal);
-            JOptionPane.showMessageDialog(null, "Counter proposal transmitted to logistic " + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
-        }
     }
 
     public void removeProposals(String projectId) {
@@ -135,5 +147,21 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
 
     public void removeOtherCounterProposals(Specification proposal) {
         counterProposalsModel.removeOtherCounterProposals(proposal);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        JMenuItem menu = (JMenuItem) event.getSource();
+        if (menu == menuItemAnalyse) {
+            manufacturerAgent.askToDesignAndWorkshop(specificationsModel.data.get(specificationsTable.getSelectedRow()));
+            JOptionPane.showMessageDialog(null, "Sent for analysing !", "", JOptionPane.INFORMATION_MESSAGE);
+        }else if(menu == menuItemSendCounterProposalToLogistic){
+            Specification counterProposal = counterProposalsModel.data.get(counterProposalsTable.getSelectedRow());
+            manufacturerAgent.transmitCounterProposalToLogistic(counterProposal);
+            JOptionPane.showMessageDialog(null, "Counter proposal transmitted to logistic " + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
+        }else if(menu == menuItemFinishedProduction){
+            Specification counterProposal = counterProposalsModel.data.get(counterProposalsTable.getSelectedRow());
+            JOptionPane.showMessageDialog(null, "TODO" + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 }

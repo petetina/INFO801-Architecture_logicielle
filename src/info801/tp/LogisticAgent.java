@@ -1,24 +1,27 @@
 package info801.tp;
 
 import info801.tp.gui.LogisticAgentGUI;
+import info801.tp.models.MaterialNeed;
 import info801.tp.models.Specification;
+import info801.tp.models.State;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class LogisticAgent extends Thread {
     private int id;
     private String name;
     private LogisticAgentGUI frame;
     private List<ManufacturerAgent> manufacturerAgents;
+    private List<SupplierAgent> supplierAgents;
 
     public LogisticAgent(int id){
         this.id = id;
         name = "Logistic" + id;
         frame = new LogisticAgentGUI(this);
         this.manufacturerAgents = new ArrayList<>();
+        this.supplierAgents = new ArrayList<>();
+
         OpenJMS.getInstance().createTopic("needsCustomers"+name);
         OpenJMS.getInstance().createTopic("requestsForProposal"+name);
         OpenJMS.getInstance().createQueue("transmitCounterRFPTo"+name);
@@ -76,6 +79,10 @@ public class LogisticAgent extends Thread {
         manufacturerAgent.addLogistic(this);
     }
 
+    public void addSupplier(SupplierAgent supplierAgent){
+        supplierAgents.add(supplierAgent);
+    }
+
     public String listenCustomersNeeds(){
         Log.write("Logistic " + id, "listening customers needs !");
         String result = OpenJMS.getInstance().receiveMessageFromTopic(name, "needsCustomers"+name);
@@ -105,6 +112,7 @@ public class LogisticAgent extends Thread {
         if(opinion){
             frame.updateNeedState(proposal.getId(), info801.tp.models.State.ACCEPTE);
             frame.removeOtherCounterProposals(proposal);
+            frame.updateSpecificationState(proposal.getId(), info801.tp.models.State.ACCEPTE);
             //Tell to other manufacturer that theirs proposals are rejected
             for(ManufacturerAgent manufacturerAgent : manufacturerAgents)
             {
@@ -123,6 +131,14 @@ public class LogisticAgent extends Thread {
 
     public void transmitCounterRFPToCustomer(String allProposals, String customerId){
         OpenJMS.getInstance().postMessageInQueue(allProposals,"transmitCounterRFPTo"+customerId);
+    }
+
+    public void makeARFPMaterialToAllSuppliers(MaterialNeed needMaterial, String projectId) {
+        needMaterial.setId(RandomGenerator.generateId());
+        needMaterial.setLogisticName(name);
+        needMaterial.setCustomerProjectId(projectId);
+        for(SupplierAgent supplierAgent : supplierAgents)
+            OpenJMS.getInstance().postMessageInQueue(needMaterial.toString(),"materialNeedsSupplier"+supplierAgent.getId());
     }
 
 }

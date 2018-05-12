@@ -20,6 +20,12 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
     private EditableSpecificationsModel specificationsModel;
 
     public DesignAndWorkshopGUI(DesignAndWorkShopAgent designAndWorkShopAgent){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.designAndWorkShopAgent = designAndWorkShopAgent;
         setSize(890,360);
         //setLocation(480,(int)(manufacturerAgent.getId()-1)*getHeight());

@@ -20,6 +20,12 @@ public class CreateRFP extends JFrame{
     private JLabel lblQuantity;
 
     public CreateRFP(JFrame parent, LogisticAgent logisticAgent, String projectId, String customerName, int quantity){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         lblQuantity.setText(quantity+"");
         setSize(400,250);
         setContentPane(mainPanel);

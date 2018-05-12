@@ -1,7 +1,7 @@
 package info801.tp.models;
 
-public enum State {
-    EN_ATTENTE, ACCEPTE, REJETE, EN_PRODUCTION;
+public enum StateMaterialNeed {
+    EN_ATTENTE, REPONDU, ACCEPTE, REJETE, LIVRE;
 
 
     @Override

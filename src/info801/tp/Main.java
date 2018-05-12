@@ -19,11 +19,17 @@ public class Main {
             DesignAndWorkShopAgent designAndWorkShopAgent2 = new DesignAndWorkShopAgent(2);
             DesignAndWorkShopAgent designAndWorkShopAgent3 = new DesignAndWorkShopAgent(3);
 
+            SupplierAgent supplierAgent = new SupplierAgent(1);
+            SupplierAgent supplierAgent2 = new SupplierAgent(2);
+
             //Add manufacturer 1 and 2 to logistic1 's manufacturerList
             //And logistic to manufacturer
             //It is a biredirectional link !
             logisticAgent1.addManufacturer(manufacturerAgent1);
             logisticAgent1.addManufacturer(manufacturerAgent2);
+
+            //Unidirectional link !
+            logisticAgent1.addSupplier(supplierAgent);
 
             customerAgent1.start();
             //customerAgent2.start();
@@ -38,6 +44,8 @@ public class Main {
             designAndWorkShopAgent2.start();
             designAndWorkShopAgent3.start();
 
+            supplierAgent.start();
+            supplierAgent2.start();
         }catch(Exception e){
             System.out.println("Merci d'ouvrir OpenJMS");
         }

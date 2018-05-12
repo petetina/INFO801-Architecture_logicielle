@@ -7,7 +7,6 @@ import javax.jms.*;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import java.net.MalformedURLException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -38,7 +37,7 @@ public final class OpenJMS {
     public void init(){
         try {
             System.out.println("initialisation ...");
-            String destinationsToRemove[] = {"needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer"};
+            String destinationsToRemove[] = {"needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer", "materialNeeds"};
             Vector destinations = admin.getAllDestinations();
             Iterator iterator = destinations.iterator();
             while (iterator.hasNext()) {

@@ -22,13 +22,23 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private JTable needsTable;
     private NeedsModel needsModel;
     private JTable counterProposalsTable;
+    private JTabbedPane tabbedPane;
     private SpecificationsWithFabricantModel counterProposalsModel;
     private LogisticAgent logisticAgent;
     private JMenuItem menuItemSendRFP;
     private JMenuItem menuItemAskForMoreDetails;
     private JMenuItem menuItemSendCounterProposalToCustomer;
+    private JMenuItem menuItemRFPSuppliers;
+    private JMenuItem menuItemRFPTransporters;
+    private int rowSelectedCounterProposal = -1;
 
     public LogisticAgentGUI(LogisticAgent logisticAgent){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         this.logisticAgent = logisticAgent;
         setLocation(-7,248);
         setSize(500,484);
@@ -55,10 +65,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     }
 
     private void populate(){
+
         needsModel = new NeedsModel();
         needsTable.setModel(needsModel);
 
-        addMenu();
+        setMenu();
         needsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent me) {
@@ -72,18 +83,24 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         counterProposalsModel = new SpecificationsWithFabricantModel();
         counterProposalsTable.setModel(counterProposalsModel);
         counterProposalsTable.setRowHeight(100);
-        addMenuCounterProposals();
+        setMenuCounterProposals();
         counterProposalsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent me) {
                 int row = counterProposalsTable.rowAtPoint(me.getPoint());
-                counterProposalsTable.clearSelection();
+                rowSelectedCounterProposal = row;
                 counterProposalsTable.setRowSelectionInterval(row,row);
+                counterProposalsTable.clearSelection();
+                State state = counterProposalsModel.data.get(row).getState();
+                if(state.equals(State.EN_ATTENTE))
+                    setMenuCounterProposals();
+                else if(state.equals(State.ACCEPTE))
+                    setMenuCounterProposalsAccepted();
             }
         });
     }
 
-    private void addMenu(){
+    private void setMenu(){
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
@@ -99,13 +116,29 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         needsTable.setComponentPopupMenu(popupMenu);
     }
 
-    private void addMenuCounterProposals(){
+    private void setMenuCounterProposals(){
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
         menuItemSendCounterProposalToCustomer = new JMenuItem("Send all proposals for this project to customer");
         menuItemSendCounterProposalToCustomer.addActionListener(this);
         popupMenu.add(menuItemSendCounterProposalToCustomer);
+
+        // sets the popup menu for the table
+        counterProposalsTable.setComponentPopupMenu(popupMenu);
+    }
+
+    private void setMenuCounterProposalsAccepted(){
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemRFPSuppliers = new JMenuItem("Send RFP to suppliers");
+        menuItemRFPSuppliers.addActionListener(this);
+        popupMenu.add(menuItemRFPSuppliers);
+
+        menuItemRFPTransporters = new JMenuItem("Send RFP to transporters");
+        menuItemRFPTransporters.addActionListener(this);
+        popupMenu.add(menuItemRFPTransporters);
 
         // sets the popup menu for the table
         counterProposalsTable.setComponentPopupMenu(popupMenu);
@@ -148,6 +181,18 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         counterProposalsModel.removeOtherCounterProposals(counterProposal);
     }
 
+    public boolean hasNoMoreCounterProposals(String id) {
+        return counterProposalsModel.countProposalForProject(id) == 0;
+    }
+
+    public void updateNeedState(String id, State newState) {
+        needsModel.updateNeedState(id,newState);
+    }
+
+    public void updateSpecificationState(String id, State newState) {
+        counterProposalsModel.updateSpecificationState(id,newState);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
 
@@ -163,14 +208,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             String projectId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),1);
             String customerId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),2);
             sendAllProposalsForProject(projectId,customerId);
+        }else if(menu == menuItemRFPSuppliers){
+            new CreateRFPMaterials(logisticAgent, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
+            //MAJ
+        }else if(menu == menuItemRFPTransporters){
+
         }
-    }
-
-    public boolean hasNoMoreCounterProposals(String id) {
-        return counterProposalsModel.countProposalForProject(id) == 0;
-    }
-
-    public void updateNeedState(String id, State newState) {
-        needsModel.updateNeedState(id,newState);
     }
 }

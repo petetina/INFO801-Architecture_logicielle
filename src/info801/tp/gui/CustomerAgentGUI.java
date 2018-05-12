@@ -24,6 +24,11 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
     private JMenuItem menuItemRejectProposal;
 
     public CustomerAgentGUI(CustomerAgent customerAgent){
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         this.customerAgent = customerAgent;
         txtQuantity.setModel(new SpinnerNumberModel(1,1,9999,1));
         setSize(500,250);
