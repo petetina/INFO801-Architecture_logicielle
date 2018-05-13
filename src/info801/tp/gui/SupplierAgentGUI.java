@@ -21,7 +21,9 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
     private MaterialNeedsModel materialNeedsDoneModel;
     private JMenuItem menuItemICan;
     private JMenuItem menuItemICant;
+    private JMenuItem menuItemToPackage;
     private int rowSelectedMaterialNeedsDoing = -1;
+    private int rowSelectedMaterialNeedsDone = -1;
 
     public SupplierAgentGUI(SupplierAgent supplierAgent) {
         try {
@@ -66,17 +68,44 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
         materialNeedsDoneModel = new MaterialNeedsModel();
         materialNeedsDoneTable.setModel(materialNeedsDoneModel);
         materialNeedsDoneTable.setRowHeight(100);
+        setMenuMaterialNeedsDoneInStateToPackage();
+        materialNeedsDoneTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent me) {
+                int row = materialNeedsDoneTable.rowAtPoint(me.getPoint());
+                rowSelectedMaterialNeedsDone = row;
+                materialNeedsDoneTable.clearSelection();
+                materialNeedsDoneTable.setRowSelectionInterval(row,row);
+                StateMaterialNeed state = materialNeedsDoneModel.data.get(row).getState();
+                if(state.equals(StateMaterialNeed.A_CONDITIONNER))
+                    setMenuMaterialNeedsDoneInStateToPackage();
+                else
+                    materialNeedsDoneTable.setComponentPopupMenu(null);
+            }
+        });
+    }
+
+    private void setMenuMaterialNeedsDoneInStateToPackage() {
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemToPackage = new JMenuItem("Conditionner");
+        menuItemToPackage.addActionListener(this);
+        popupMenu.add(menuItemToPackage);
+
+        // sets the popup menu for the table
+        materialNeedsDoneTable.setComponentPopupMenu(popupMenu);
     }
 
     private void setMenuInStateWaiting(){
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemICan = new JMenuItem("I can");
+        menuItemICan = new JMenuItem("OK");
         menuItemICan.addActionListener(this);
         popupMenu.add(menuItemICan);
 
-        menuItemICant = new JMenuItem("I can't");
+        menuItemICant = new JMenuItem("Pas OK");
         menuItemICant.addActionListener(this);
         popupMenu.add(menuItemICant);
 
@@ -94,6 +123,10 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
 
     public void updateMaterialNeedState(MaterialNeed materialNeed, StateMaterialNeed newState) {
         materialNeedsDoingModel.updateNeedState(materialNeed,newState);
+    }
+
+    public void updateMaterialNeedDoneState(String projectId, StateMaterialNeed newState) {
+        materialNeedsDoneModel.updateNeedStateByProjectId(projectId,newState);
     }
 
     public void removeMaterialNeedsDoing(String id) {
@@ -115,6 +148,10 @@ public class SupplierAgentGUI extends JFrame implements ActionListener {
             materialNeed.setState(StateMaterialNeed.REJETE);
             supplierAgent.answerMaterialNeedRFP(materialNeed);
             updateMaterialNeedState(materialNeed,StateMaterialNeed.REPONDU);
+        }else if(menu == menuItemToPackage){
+            MaterialNeed materialNeed = materialNeedsDoneModel.data.get(rowSelectedMaterialNeedsDone);
+            updateMaterialNeedDoneState(materialNeed.getCustomerProjectId(),StateMaterialNeed.CONDITIONNE);
+            supplierAgent.packageMaterialNeed(materialNeed);
         }
     }
 }

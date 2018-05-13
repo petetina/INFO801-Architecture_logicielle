@@ -37,7 +37,7 @@ public final class OpenJMS {
     public void init(){
         try {
             System.out.println("initialisation ...");
-            String destinationsToRemove[] = {"needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer", "materialNeeds"};
+            String destinationsToRemove[] = {"needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer", "materialNeeds", "finishedProduction", "packageMaterialNeed"};
             Vector destinations = admin.getAllDestinations();
             Iterator iterator = destinations.iterator();
             while (iterator.hasNext()) {

@@ -30,7 +30,7 @@ public class CreateRFP extends JFrame{
         setSize(400,250);
         setContentPane(mainPanel);
         setLocationRelativeTo(parent);
-        setTitle("Create a RFP - Logistic "+logisticAgent.getId());
+        setTitle("Créer un appel d'offre - Logistic "+logisticAgent.getId());
         setVisible(true);
 
         addCheckFieldsListener();

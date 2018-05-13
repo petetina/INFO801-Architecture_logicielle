@@ -59,7 +59,7 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemMakeACounterRFP = new JMenuItem("Make a counter RFP");
+        menuItemMakeACounterRFP = new JMenuItem("Faire une contre-proposition");
         menuItemMakeACounterRFP.addActionListener(this);
         popupMenu.add(menuItemMakeACounterRFP);
 
@@ -82,7 +82,7 @@ public class DesignAndWorkshopGUI extends JFrame implements ActionListener {
         if (menu == menuItemMakeACounterRFP) {
             EditableSpecificationsModel model = (EditableSpecificationsModel) specificationsTable.getModel();
             designAndWorkShopAgent.makeACounterProposal(model.data.get(specificationsTable.getSelectedRow()));
-            JOptionPane.showMessageDialog(null,"Counter proposal sent to manufacturer "+designAndWorkShopAgent.getId(), "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null,"Une contre-proposition envoyée au fabricant "+designAndWorkShopAgent.getId(), "", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

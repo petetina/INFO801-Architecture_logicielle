@@ -1,14 +1,11 @@
 package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
-import info801.tp.models.Material;
 import info801.tp.models.MaterialNeed;
-import info801.tp.models.StateMaterialNeed;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 public class CreateRFPMaterials extends JFrame {
     private JPanel mainPanel;

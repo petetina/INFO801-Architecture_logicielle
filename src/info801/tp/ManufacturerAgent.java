@@ -1,12 +1,14 @@
 package info801.tp;
 
 import info801.tp.gui.ManufacturerAgentGUI;
+import info801.tp.models.MaterialNeed;
 import info801.tp.models.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static info801.tp.models.State.ACCEPTE;
+import static info801.tp.models.State.CONDITIONNE;
 import static info801.tp.models.State.EN_PRODUCTION;
 
 public class ManufacturerAgent extends Thread {
@@ -24,6 +26,7 @@ public class ManufacturerAgent extends Thread {
         OpenJMS.getInstance().createTopic("specification"+name);
         OpenJMS.getInstance().createQueue("counterRFP"+name);
         OpenJMS.getInstance().createQueue("opinionProposals"+name);
+        OpenJMS.getInstance().createQueue("packageMaterialNeed"+name);
     }
 
     @Override
@@ -73,8 +76,18 @@ public class ManufacturerAgent extends Thread {
             }
         };
 
+        Thread packageMaterialNeedThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    listenPackagingRequestsMaterialNeed();
+                }
+            }
+        };
+
         getCounterProposalsThread.start();
         opinionProposalThread.start();
+        packageMaterialNeedThread.start();
 
     }
 
@@ -109,6 +122,16 @@ public class ManufacturerAgent extends Thread {
         counterRFP.setManufacturer(name);
         Log.write(name," transmit a counter RFP to logistic " + counterRFP.getLogisticName() + " !");
         OpenJMS.getInstance().postMessageInQueue(counterRFP.toString(),"transmitCounterRFPTo"+counterRFP.getLogisticName());
+    }
+
+    public void notifyFinishedProduction(Specification counterProposal) {
+        OpenJMS.getInstance().postMessageInQueue(counterProposal.toString(),"finishedProduction"+counterProposal.getLogisticName());
+    }
+
+    private void listenPackagingRequestsMaterialNeed() {
+        String materialNeedString = OpenJMS.getInstance().receiveMessageFromQueue("packageMaterialNeed"+name);
+        MaterialNeed materialNeed = MaterialNeed.parse(materialNeedString);
+        frame.updateCounterProposalStateFromProjectId(materialNeed.getCustomerProjectId(),CONDITIONNE);
     }
 
     private void listenOpinionProposal() {

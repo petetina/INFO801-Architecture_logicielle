@@ -4,6 +4,7 @@ import info801.tp.gui.LogisticAgentGUI;
 import info801.tp.models.MaterialNeed;
 import info801.tp.models.Specification;
 import info801.tp.models.State;
+import info801.tp.models.StateMaterialNeed;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,8 @@ public class LogisticAgent extends Thread {
         OpenJMS.getInstance().createQueue("transmitCounterRFPTo"+name);
         OpenJMS.getInstance().createQueue("opinionProposals"+name);
         OpenJMS.getInstance().createQueue("materialNeeds"+name);
+        OpenJMS.getInstance().createQueue("finishedProduction"+name);
+        OpenJMS.getInstance().createQueue("packageMaterialNeed"+name);
     }
 
     @Override
@@ -79,6 +82,26 @@ public class LogisticAgent extends Thread {
             }
         };
         materialNeedsThread.start();
+
+        Thread finishedProductionThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    listenFinishedProduction();
+                }
+            }
+        };
+        finishedProductionThread.start();
+
+        Thread packageMaterialNeedThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    listenPackagingRequestsMaterialNeed();
+                }
+            }
+        };
+        packageMaterialNeedThread.start();
     }
 
     @Override
@@ -167,6 +190,22 @@ public class LogisticAgent extends Thread {
             else
                 OpenJMS.getInstance().postMessageInQueue(materialNeed.toString() + ";;true","materialNeedsResponsesSupplier"+supplierAgent.getId());
         }
+    }
+
+    private void listenFinishedProduction() {
+        String proposalString = OpenJMS.getInstance().receiveMessageFromQueue("finishedProduction"+name);
+        Specification proposal = Specification.parse(proposalString);
+        frame.updateMaterialNeedByProjectId(proposal.getId(),StateMaterialNeed.A_CONDITIONNER);
+        String supplierName = frame.findSupplierForProject(proposal.getId());
+        OpenJMS.getInstance().postMessageInQueue(proposal.getId(),"finishedProduction"+supplierName);
+    }
+
+    private void listenPackagingRequestsMaterialNeed(){
+        String materialNeedString = OpenJMS.getInstance().receiveMessageFromQueue("packageMaterialNeed"+name);
+        MaterialNeed materialNeed = MaterialNeed.parse(materialNeedString);
+        frame.updateMaterialNeedByProjectId(materialNeed.getCustomerProjectId(),StateMaterialNeed.CONDITIONNE);
+        String manufacturerName = frame.findManufacturerForProject(materialNeed.getCustomerProjectId());
+        OpenJMS.getInstance().postMessageInQueue(materialNeedString,"packageMaterialNeed"+manufacturerName);
     }
 
 }

@@ -128,6 +128,23 @@ public class SpecificationsWithStateModel extends AbstractTableModel {
         return -1;
     }
 
+    public int findSpecificationByProjectId(String projectId){
+        int i = 0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(projectId)) {
+                return i;
+            }else
+                i++;
+        }
+        return -1;
+    }
+
+    public void changeStateFromProjectId(String projectId, State newState){
+        int rowIndex = findSpecificationByProjectId(projectId);
+        data.get(rowIndex).setState(newState);
+        fireTableDataChanged();
+    }
+
     public void changeState(Specification proposal, State newState){
         int rowIndex = findSpecificationByProjectId(proposal);
         data.get(rowIndex).setState(newState);

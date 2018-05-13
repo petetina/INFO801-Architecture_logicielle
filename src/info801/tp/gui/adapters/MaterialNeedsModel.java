@@ -68,6 +68,16 @@ public class MaterialNeedsModel extends AbstractTableModel {
         return -1;
     }
 
+    private int findNeedByProjectId(String projectId) {
+        int i= 0;
+        while(i<data.size()){
+            if(data.get(i).getCustomerProjectId().equals(projectId))
+                return i;
+            i++;
+        }
+        return -1;
+    }
+
     public void add(MaterialNeed row) {
         data.add(row);
         fireTableDataChanged();
@@ -75,6 +85,14 @@ public class MaterialNeedsModel extends AbstractTableModel {
 
     public void updateNeedState(MaterialNeed materialNeed, StateMaterialNeed newState) {
         int rowIndex = findNeed(materialNeed);
+        if(rowIndex != -1) {
+            data.get(rowIndex).setState(newState);
+            fireTableDataChanged();
+        }
+    }
+
+    public void updateNeedStateByProjectId(String projectId, StateMaterialNeed newState) {
+        int rowIndex = findNeedByProjectId(projectId);
         if(rowIndex != -1) {
             data.get(rowIndex).setState(newState);
             fireTableDataChanged();

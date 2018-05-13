@@ -91,8 +91,11 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
                 State state = counterProposalsModel.data.get(row).getState();
                 if(state.equals(State.EN_PRODUCTION)){
                     setMenuCounterProposalsProductionState();
-                }else
+                }else if(state.equals(State.EN_ATTENTE))
                     setMenuCounterProposals();
+                else
+                    counterProposalsTable.setComponentPopupMenu(null);
+
             }
         });
     }
@@ -101,7 +104,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemFinishedProduction = new JMenuItem("Production finished !");
+        menuItemFinishedProduction = new JMenuItem("Le produit est réalisé !");
         menuItemFinishedProduction.addActionListener(this);
         popupMenu.add(menuItemFinishedProduction);
 
@@ -113,7 +116,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemAnalyse = new JMenuItem("Analyse");
+        menuItemAnalyse = new JMenuItem("Analyser");
         menuItemAnalyse.addActionListener(this);
         popupMenu.add(menuItemAnalyse);
 
@@ -125,7 +128,7 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemSendCounterProposalToLogistic = new JMenuItem("Send counter proposal to logistic");
+        menuItemSendCounterProposalToLogistic = new JMenuItem("Envoyer contre-proposition au maitre d'oeuvre");
         menuItemSendCounterProposalToLogistic.addActionListener(this);
         popupMenu.add(menuItemSendCounterProposalToLogistic);
 
@@ -145,6 +148,10 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         counterProposalsModel.changeState(proposal,accepte);
     }
 
+    public void updateCounterProposalStateFromProjectId(String projectId, State accepte) {
+        counterProposalsModel.changeStateFromProjectId(projectId,accepte);
+    }
+
     public void removeOtherCounterProposals(Specification proposal) {
         counterProposalsModel.removeOtherCounterProposals(proposal);
     }
@@ -154,14 +161,17 @@ public class ManufacturerAgentGUI extends JFrame implements ActionListener {
         JMenuItem menu = (JMenuItem) event.getSource();
         if (menu == menuItemAnalyse) {
             manufacturerAgent.askToDesignAndWorkshop(specificationsModel.data.get(specificationsTable.getSelectedRow()));
-            JOptionPane.showMessageDialog(null, "Sent for analysing !", "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Envoyé pour l'analyse !", "", JOptionPane.INFORMATION_MESSAGE);
         }else if(menu == menuItemSendCounterProposalToLogistic){
             Specification counterProposal = counterProposalsModel.data.get(counterProposalsTable.getSelectedRow());
             manufacturerAgent.transmitCounterProposalToLogistic(counterProposal);
-            JOptionPane.showMessageDialog(null, "Counter proposal transmitted to logistic " + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Contre-proposition transmise au maitre d'oeuvre " + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
         }else if(menu == menuItemFinishedProduction){
             Specification counterProposal = counterProposalsModel.data.get(counterProposalsTable.getSelectedRow());
-            JOptionPane.showMessageDialog(null, "TODO" + counterProposal.getLogisticName() + "!", "", JOptionPane.INFORMATION_MESSAGE);
+            manufacturerAgent.notifyFinishedProduction(counterProposal);
+            removeOtherCounterProposals(counterProposal);
+            updateCounterProposalState(counterProposal,State.PRODUCTION_FINI);
+
         }
     }
 }

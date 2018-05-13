@@ -1,6 +1,5 @@
 package info801.tp;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import info801.tp.gui.SupplierAgentGUI;
 import info801.tp.models.MaterialNeed;
 import info801.tp.models.StateMaterialNeed;
@@ -17,6 +16,7 @@ public class SupplierAgent extends Thread{
 
         OpenJMS.getInstance().createQueue("materialNeeds"+name);
         OpenJMS.getInstance().createQueue("materialNeedsResponses"+name);
+        OpenJMS.getInstance().createQueue("finishedProduction"+name);
     }
 
     @Override
@@ -46,6 +46,16 @@ public class SupplierAgent extends Thread{
             }
         };
         acceptedOrRejetedRFPThread.start();
+
+        Thread finishedProductionThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    listenFinishedProduction();
+                }
+            }
+        };
+        finishedProductionThread.start();
     }
 
     private void listenMaterialNeeds() {
@@ -60,6 +70,15 @@ public class SupplierAgent extends Thread{
         OpenJMS.getInstance().postMessageInQueue(materialNeed.toString(),"materialNeeds"+materialNeed.getLogisticName());
     }
 
+    private void listenFinishedProduction() {
+        String projectId = OpenJMS.getInstance().receiveMessageFromQueue("finishedProduction"+name);
+        frame.updateMaterialNeedDoneState(projectId,StateMaterialNeed.A_CONDITIONNER);
+    }
+
+    public void packageMaterialNeed(MaterialNeed materialNeed) {
+        OpenJMS.getInstance().postMessageInQueue(materialNeed.toString(),"packageMaterialNeed"+materialNeed.getLogisticName());
+    }
+
     public void listenAcceptedOrRejectedRFP(){
         String responseStringAndAccepted = OpenJMS.getInstance().receiveMessageFromQueue("materialNeedsResponses"+name);
         String array[] = responseStringAndAccepted.split(";;");
@@ -68,7 +87,7 @@ public class SupplierAgent extends Thread{
         MaterialNeed response = MaterialNeed.parse(responseString);
         frame.removeMaterialNeedsDoing(response.getId());
         if(accepted){
-            response.setState(StateMaterialNeed.ACCEPTE);
+            response.setState(StateMaterialNeed.EN_ATTENTE);
             frame.addMaterialNeedDone(response);
         }else{
             response.setState(StateMaterialNeed.REJETE);

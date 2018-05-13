@@ -86,6 +86,10 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
                 int row = needsTable.rowAtPoint(me.getPoint());
                 needsTable.clearSelection();
                 needsTable.setRowSelectionInterval(row,row);
+                if(((State)(needsModel.data.get(row).get(5))).equals(State.EN_ATTENTE))
+                    setMenu();
+                else
+                    needsTable.setComponentPopupMenu(null);
 
             }
         });
@@ -106,6 +110,8 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
                     setMenuCounterProposals();
                 else if(state.equals(State.ACCEPTE))
                     setMenuCounterProposalsAccepted();
+                else
+                    counterProposalsTable.setComponentPopupMenu(null);
             }
         });
 
@@ -114,17 +120,20 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         materialNeedsTable.setRowHeight(100);
         setMenuMaterialNeedsInStateAccepted();
         materialNeedsTable.addMouseListener(new MouseAdapter() {
+
             @Override
-            public void mouseEntered(MouseEvent me) {
+            public void mousePressed(MouseEvent me) {
                 int row = materialNeedsTable.rowAtPoint(me.getPoint());
                 rowSelectedMaterialNeeds = row;
-                materialNeedsTable.setRowSelectionInterval(row,row);
                 materialNeedsTable.clearSelection();
+                materialNeedsTable.setRowSelectionInterval(row,row);
+                System.out.println("row = "+row);
                 StateMaterialNeed state = materialNeedsModel.data.get(row).getState();
+                System.out.println(state.toString());
                 if(state.equals(StateMaterialNeed.ACCEPTE))
                     setMenuMaterialNeedsInStateAccepted();
                 else
-                    materialNeedsTable.setComponentPopupMenu(null);
+                materialNeedsTable.setComponentPopupMenu(null);
 
             }
         });
@@ -137,7 +146,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemChooseSupplier = new JMenuItem("Choose this supplier");
+        menuItemChooseSupplier = new JMenuItem("Choisir ce fournisseur");
         menuItemChooseSupplier.addActionListener(this);
         popupMenu.add(menuItemChooseSupplier);
 
@@ -149,11 +158,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemSendRFP = new JMenuItem("Send a request for proposal");
+        menuItemSendRFP = new JMenuItem("Faire un appel d'offre");
         menuItemSendRFP.addActionListener(this);
         popupMenu.add(menuItemSendRFP);
 
-        menuItemAskForMoreDetails = new JMenuItem("Ask to consumer for more details");
+        menuItemAskForMoreDetails = new JMenuItem("Demander au client plus de détails");
         menuItemAskForMoreDetails.addActionListener(this);
         popupMenu.add(menuItemAskForMoreDetails);
 
@@ -165,7 +174,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemSendCounterProposalToCustomer = new JMenuItem("Send all proposals for this project to customer");
+        menuItemSendCounterProposalToCustomer = new JMenuItem("Envoyer toutes les propositions du projet au client");
         menuItemSendCounterProposalToCustomer.addActionListener(this);
         popupMenu.add(menuItemSendCounterProposalToCustomer);
 
@@ -177,11 +186,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemRFPSuppliers = new JMenuItem("Send RFP to suppliers");
+        menuItemRFPSuppliers = new JMenuItem("Envoyer un appel d'offre aux fournisseurs");
         menuItemRFPSuppliers.addActionListener(this);
         popupMenu.add(menuItemRFPSuppliers);
 
-        menuItemRFPTransporters = new JMenuItem("Send RFP to transporters");
+        menuItemRFPTransporters = new JMenuItem("Envoyer un appel d'offre aux transporteurs");
         menuItemRFPTransporters.addActionListener(this);
         popupMenu.add(menuItemRFPTransporters);
 
@@ -214,7 +223,7 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             allProposals = allProposals.substring(0,allProposals.length()-2);
 
         logisticAgent.transmitCounterRFPToCustomer(allProposals,customerId);
-        JOptionPane.showMessageDialog(null, "Counter proposals has been sent to customer !", "", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(null, "Les contre-propositions ont été envoyées au client !", "", JOptionPane.INFORMATION_MESSAGE);
 
     }
 
@@ -246,13 +255,37 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         materialNeedRFPModel.add(materialNeed);
     }
 
-    private void updateMaterialNeed(MaterialNeed materialNeed, StateMaterialNeed choisi) {
+    private void updateMaterialNeed(MaterialNeed materialNeed, StateMaterialNeed newState) {
         materialNeedsModel.removeOthers(materialNeed);
-        materialNeedsModel.updateNeedState(materialNeed,choisi);
+        materialNeedsModel.updateNeedState(materialNeed,newState);
+    }
+
+    public void updateMaterialNeedByProjectId(String projectId, StateMaterialNeed newState) {
+        MaterialNeed materialNeed = materialNeedsModel.findByProjectId(projectId);
+        materialNeedsModel.updateNeedState(materialNeed,newState);
     }
 
     private void removeMaterialNeedRFP(String id) {
         materialNeedRFPModel.removeMaterialNeeds(id);
+    }
+
+    public String findSupplierForProject(String id) {
+        MaterialNeed materialNeed = materialNeedsModel.findByProjectId(id);
+        if(materialNeed == null)
+            return "";
+        else
+            return materialNeed.getSupplierName();
+
+    }
+
+    public String findManufacturerForProject(String id) {
+        int row = counterProposalsModel.findSpecificationByProjectId(id);
+        Specification counterProposal = counterProposalsModel.data.get(row);
+        if(counterProposal == null)
+            return "";
+        else
+            return counterProposal.getManufacturer();
+
     }
 
     @Override
@@ -281,6 +314,5 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             removeMaterialNeedRFP(materialNeed.getId());
         }
     }
-
 
 }

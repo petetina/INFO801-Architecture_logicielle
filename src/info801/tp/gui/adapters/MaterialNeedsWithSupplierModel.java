@@ -51,4 +51,15 @@ public class MaterialNeedsWithSupplierModel extends MaterialNeedsModel {
         }
         fireTableDataChanged();
     }
+
+    public MaterialNeed findByProjectId(String id) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).getCustomerProjectId().equals(id))
+                return data.get(i);
+            else
+                i++;
+        }
+        return null;
+    }
 }

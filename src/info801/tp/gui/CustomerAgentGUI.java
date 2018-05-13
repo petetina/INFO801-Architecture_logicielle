@@ -89,11 +89,11 @@ public class CustomerAgentGUI extends JFrame implements ActionListener{
         // constructs the popup menu
         JPopupMenu popupMenu = new JPopupMenu();
 
-        menuItemAcceptProposal = new JMenuItem("Accept");
+        menuItemAcceptProposal = new JMenuItem("Accepter");
         menuItemAcceptProposal.addActionListener(this);
         popupMenu.add(menuItemAcceptProposal);
 
-        menuItemRejectProposal = new JMenuItem("Reject");
+        menuItemRejectProposal = new JMenuItem("Refuser");
         menuItemRejectProposal.addActionListener(this);
         popupMenu.add(menuItemRejectProposal);
 
