@@ -119,20 +119,38 @@ public class TransporterAgentGUI extends JFrame implements ActionListener {
     }
 
     public void addProposal(TransporterNeed transporterNeed) {
-        proposalModel.add(transporterNeed);
+        if(!proposalModel.exists(transporterNeed))
+            proposalModel.add(transporterNeed);
     }
 
     public void addCounterProposal(TransporterNeed transporterNeed) {
-        counterProposalsModel.add(transporterNeed);
+        if(!proposalModel.exists(transporterNeed))
+            counterProposalsModel.add(transporterNeed);
     }
 
     @Override
     public void actionPerformed(ActionEvent event) {
         JMenuItem menu = (JMenuItem) event.getSource();
 
-        if(menu == menuItemOK)
-            ;
-        else if(menu == menuItemPasOK)
-            ;
+        if(menu == menuItemOK){
+            TransporterNeed transporterNeed = proposalModel.data.get(proposalsTable.getSelectedRow());
+            transporterNeed.setTransporterName(transporterAgent.name);
+            updateProposalState(transporterNeed,StateTransporterNeed.REPONDU);
+            transporterAgent.acceptProposal(transporterNeed);
+        }
+        else if(menu == menuItemPasOK){
+            TransporterNeed transporterNeed = proposalModel.data.get(proposalsTable.getSelectedRow());
+            transporterNeed.setTransporterName(transporterAgent.name);
+            updateProposalState(transporterNeed,StateTransporterNeed.REPONDU);
+            transporterAgent.rejectProposal(transporterNeed);
+        }
+    }
+
+    private void updateProposalState(TransporterNeed transporterNeed, StateTransporterNeed newState) {
+        proposalModel.updateState(transporterNeed,newState);
+    }
+
+    public void removeAllProposals(String id) {
+        proposalModel.removeAll(id);
     }
 }

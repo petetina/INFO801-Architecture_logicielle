@@ -27,6 +27,7 @@ public class LogisticAgent extends Thread {
         OpenJMS.getInstance().createQueue("materialNeeds"+name);
         OpenJMS.getInstance().createQueue("finishedProduction"+name);
         OpenJMS.getInstance().createQueue("packageMaterialNeed"+name);
+        OpenJMS.getInstance().createQueue("counterProposalsTransporters"+name);
     }
 
     @Override
@@ -99,6 +100,17 @@ public class LogisticAgent extends Thread {
             }
         };
         packageMaterialNeedThread.start();
+
+        Thread listenCounterProposalsTransportersThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    listenCounterProposalsTransporters();
+                }
+            }
+        };
+        listenCounterProposalsTransportersThread.start();
+
     }
 
     @Override
@@ -207,10 +219,12 @@ public class LogisticAgent extends Thread {
 
     public boolean makeAProposalTransporter(Specification counterProposal, String addressFrom, String warehouse, String date) {
         boolean result = OpenJMS.getInstance().destinationExists(warehouse);
+        TransporterNeed transporterNeed = TransporterNeed.parse(counterProposal.toString() + ";;" + RandomGenerator.generateId() + ";;" + addressFrom + ";;" + warehouse + ";;" + date + ";;" + StateTransporterNeed.EN_ATTENTE.toString() + ";; ");
         if(result){
-            OpenJMS.getInstance().postMessageInTopic(counterProposal.toString() + ";;" + RandomGenerator.generateId() + ";;" + addressFrom + ";;" + warehouse + ";;" + date + ";;" + StateTransporterNeed.EN_ATTENTE.toString(),"transportersProposals");
+            OpenJMS.getInstance().postMessageInTopic(transporterNeed.toString(),"transportersProposals");
             result = true;
         }
+        frame.addProposalTransporter(transporterNeed);
         return result;
     }
 
@@ -218,5 +232,34 @@ public class LogisticAgent extends Thread {
         OpenJMS.getInstance().postMessageInQueue("","getAddress"+manufacturerName);
         String address = OpenJMS.getInstance().receiveMessageFromQueue("getAddress"+manufacturerName);
         return address;
+    }
+
+    private void listenCounterProposalsTransporters() {
+
+        String counterProposalAndOpinion = OpenJMS.getInstance().receiveMessageFromQueue("counterProposalsTransporters" + name);
+        String array[] = counterProposalAndOpinion.split("::");
+        TransporterNeed transporterNeed = TransporterNeed.parse(array[0]);
+        boolean opinion = Boolean.valueOf(array[1]);
+        if(!frame.isTransporterChosen(transporterNeed.getId())) {
+            if (opinion) {
+                //Add transporter need to counterProposalTable with State ACCEPTE
+                transporterNeed.setState(StateTransporterNeed.ACCEPTE);
+                frame.addTransporterNeedFinished(transporterNeed);
+            } else {
+                //Add transporter need to counterProposalTable with State REJETE
+                transporterNeed.setState(StateTransporterNeed.REJETE);
+                frame.addTransporterNeedFinished(transporterNeed);
+            }
+        }
+    }
+
+    public void chooseTransporter(TransporterNeed transporterNeed) {
+        List<String> transporterAgents = frame.findOthersTransporters(transporterNeed);
+        System.out.println("rejeté size : " + transporterAgents.size());
+        for(String transporterName : transporterAgents){
+            System.out.println("rejeté : "+transporterName);
+            OpenJMS.getInstance().postMessageInQueue(transporterNeed.toString() + "!false" ,"acceptedOrRejectedProposals"+transporterName);
+        }
+        OpenJMS.getInstance().postMessageInQueue(transporterNeed.toString()+"!true","acceptedOrRejectedProposals"+transporterNeed.getTransporterName());
     }
 }

@@ -1,11 +1,14 @@
 package info801.tp.gui.adapters;
 
+import info801.tp.TransporterAgent;
 import info801.tp.models.MaterialNeed;
+import info801.tp.models.StateTransporterNeed;
 import info801.tp.models.TransporterNeed;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TransporterNeedsModel extends AbstractTableModel {
     protected String[] headers = {"N° de commande","N° commande client","Nom du MO", "Materiels commandés","Source", "Destination", "Date de transport","Etat"};
@@ -77,5 +80,75 @@ public class TransporterNeedsModel extends AbstractTableModel {
     public void add(TransporterNeed row) {
         data.add(row);
         fireTableDataChanged();
+    }
+
+    public void updateState(TransporterNeed transporterNeed, StateTransporterNeed newState) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).equals(transporterNeed))
+                data.get(i).setState(newState);
+            i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public void removeAll(String id) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(id))
+                data.remove(i);
+            else
+                i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public void removeOthers(TransporterNeed transporterNeed) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(transporterNeed.getId()) && !data.get(i).equals(transporterNeed)) {
+                data.remove(i);
+            }else
+                i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public void removeByTranporterNeedId(String id) {
+        int i=0;
+        while(i<data.size()){
+            if(data.get(i).getId().equals(id)) {
+                data.remove(i);
+                break;
+            }
+            i++;
+        }
+        fireTableDataChanged();
+    }
+
+    public boolean isChosen(String id) {
+        return !data.stream().filter(transporterNeed -> transporterNeed.getId().equals(id) && transporterNeed.getState().equals(StateTransporterNeed.CHOISI)).collect(Collectors.toList()).isEmpty();
+    }
+
+    public List<String> findAllOthersTransporters(TransporterNeed transporterNeed) {
+        List<String> result = new ArrayList<>();
+        int i=0;
+        while(i<data.size()){
+            System.out.println("findAllOthersTransporters : data.get(i).transporterName = " + data.get(i).getTransporterName() + ", transporterName = " + transporterNeed.getTransporterName());
+            System.out.println("findAllOthersTransporters : equals == " + !data.get(i).getTransporterName().equals(transporterNeed.getTransporterName()));
+            if(!data.get(i).getTransporterName().equals(transporterNeed.getTransporterName())) {
+                result.add(data.get(i).getTransporterName());
+            }
+            i++;
+        }
+        return result;
+    }
+
+    public boolean exists(TransporterNeed transporterNeed) {
+        return !data.stream().filter(transporterNeed1 -> transporterNeed1.equals(transporterNeed)).collect(Collectors.toList()).isEmpty();
+    }
+
+    public boolean isChosenByProjectId(String projectId) {
+        return !data.stream().filter(transporterNeed1 -> transporterNeed1.getProject().getId().equals(projectId)).collect(Collectors.toList()).isEmpty();
     }
 }

@@ -2,14 +2,9 @@ package info801.tp.gui;
 
 import info801.tp.LogisticAgent;
 import info801.tp.RandomGenerator;
-import info801.tp.gui.adapters.MaterialNeedsModel;
-import info801.tp.gui.adapters.MaterialNeedsWithSupplierModel;
-import info801.tp.gui.adapters.NeedsModel;
-import info801.tp.gui.adapters.SpecificationsWithFabricantModel;
-import info801.tp.models.MaterialNeed;
-import info801.tp.models.Specification;
-import info801.tp.models.State;
-import info801.tp.models.StateMaterialNeed;
+import info801.tp.TransporterAgent;
+import info801.tp.gui.adapters.*;
+import info801.tp.models.*;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -17,7 +12,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class LogisticAgentGUI extends JFrame implements ActionListener{
@@ -31,6 +25,8 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private JTable materialNeedsTable;
     private MaterialNeedsWithSupplierModel materialNeedsModel;
     private JTable materialNeedRFPTable;
+    private JTable proposalsTransportersTable;
+    private JTable counterProposalsTransportersTable;
     private MaterialNeedsModel materialNeedRFPModel;
     private SpecificationsWithFabricantModel counterProposalsModel;
     public LogisticAgent logisticAgent;
@@ -42,6 +38,11 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
     private JMenuItem menuItemChooseSupplier;
     private int rowSelectedCounterProposal = -1;
     private int rowSelectedMaterialNeeds = -1;
+    private TransporterNeedsModel proposalsTransportersModel;
+    private JMenuItem menuItemChooseTransporter;
+    private TransporterNeedsModel counterProposalsTransportersModel;
+    private JMenuItem menuItemProposalTransporterOK;
+    private JMenuItem menuItemProposalTransporterPasOK;
 
     public LogisticAgentGUI(LogisticAgent logisticAgent){
         try {
@@ -134,13 +135,50 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
                 if(state.equals(StateMaterialNeed.ACCEPTE))
                     setMenuMaterialNeedsInStateAccepted();
                 else
-                materialNeedsTable.setComponentPopupMenu(null);
+                    materialNeedsTable.setComponentPopupMenu(null);
 
             }
         });
 
         materialNeedRFPModel = new MaterialNeedsModel();
         materialNeedRFPTable.setModel(materialNeedRFPModel);
+
+        proposalsTransportersModel = new TransporterNeedsModel();
+        proposalsTransportersTable.setModel(proposalsTransportersModel);
+        proposalsTransportersTable.setRowHeight(100);
+
+        counterProposalsTransportersModel = new TransporterNeedsModel();
+        counterProposalsTransportersTable.setModel(counterProposalsTransportersModel);
+        counterProposalsTransportersTable.setRowHeight(100);
+        setMenuCounterProposalsTransportersAccepted();
+        counterProposalsTransportersTable.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mousePressed(MouseEvent me) {
+                int row = counterProposalsTransportersTable.rowAtPoint(me.getPoint());
+                counterProposalsTransportersTable.clearSelection();
+                counterProposalsTransportersTable.setRowSelectionInterval(row,row);
+                StateTransporterNeed state = counterProposalsTransportersModel.data.get(row).getState();
+                System.out.println(state.toString());
+                if(state.equals(StateTransporterNeed.ACCEPTE))
+                    setMenuCounterProposalsTransportersAccepted();
+                else
+                    counterProposalsTransportersTable.setComponentPopupMenu(null);
+
+            }
+        });
+    }
+
+    private void setMenuCounterProposalsTransportersAccepted() {
+        // constructs the popup menu
+        JPopupMenu popupMenu = new JPopupMenu();
+
+        menuItemChooseTransporter = new JMenuItem("Choisir ce transporteur");
+        menuItemChooseTransporter.addActionListener(this);
+        popupMenu.add(menuItemChooseTransporter);
+
+        // sets the popup menu for the table
+        counterProposalsTransportersTable.setComponentPopupMenu(popupMenu);
     }
 
     private void setMenuMaterialNeedsInStateAccepted() {
@@ -289,6 +327,18 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
 
     }
 
+    public void addProposalTransporter(TransporterNeed transporterNeed) {
+        proposalsTransportersModel.add(transporterNeed);
+    }
+
+    public void addCounterProposalTransporter(TransporterNeed transporterNeed, boolean opinion) {
+        if(opinion)
+            transporterNeed.setState(StateTransporterNeed.ACCEPTE);
+        else
+            transporterNeed.setState(StateTransporterNeed.REJETE);
+        counterProposalsTransportersModel.add(transporterNeed);
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
 
@@ -305,32 +355,78 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
             String customerId = (String)needsTable.getModel().getValueAt(needsTable.getSelectedRow(),2);
             sendAllProposalsForProject(projectId,customerId);
         }else if(menu == menuItemRFPSuppliers){
-            new CreateRFPMaterials(this, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
+            String id = counterProposalsModel.data.get(rowSelectedCounterProposal).getId();
+            if(!isSupplierChosen(id))
+                new CreateRFPMaterials(this, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
+            else
+                JOptionPane.showMessageDialog(null, "Le fournisseur de matériel a déjà été choisi !", "Déjà choisi !", JOptionPane.ERROR_MESSAGE);
+
         }else if(menu == menuItemRFPTransporters){
-            try {
-                Specification counterProposal = counterProposalsModel.data.get(rowSelectedCounterProposal);
-                String addressFrom = logisticAgent.getManufacturerAddress(counterProposal.getManufacturer());
-                String addressToAndDate = JOptionPane.showInputDialog(
-                        this,
-                        "Les produits finis sont à " + addressFrom + ". Où et quand voulez-vous les acheminer ? (format : nom de l'entrepot; date)",
-                        "Choisissez une destination",
-                        JOptionPane.WARNING_MESSAGE
-                );
-                String array[] = addressToAndDate.split(";");
-                String warehouse = array[0];
-                String date = array[1];
+            String id = counterProposalsModel.data.get(rowSelectedCounterProposal).getId();
+            if(!isTransporterChosenByProjectId(id)) {
+                try {
+                    Specification counterProposal = counterProposalsModel.data.get(rowSelectedCounterProposal);
+                    String addressFrom = logisticAgent.getManufacturerAddress(counterProposal.getManufacturer());
+                    String addressToAndDate = JOptionPane.showInputDialog(
+                            this,
+                            "Les produits finis sont à " + addressFrom + ". Où et quand voulez-vous les acheminer ? (format : nom de l'entrepot; date)",
+                            "Choisissez une destination",
+                            JOptionPane.WARNING_MESSAGE
+                    );
+                    String array[] = addressToAndDate.split(";");
+                    String warehouse = array[0];
+                    String date = array[1];
 
-                logisticAgent.makeAProposalTransporter(counterProposal, addressFrom, warehouse, date);
+                    logisticAgent.makeAProposalTransporter(counterProposal, addressFrom, warehouse, date);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Merci de respecter le format : nom de l'entrepot; date !", "", JOptionPane.ERROR_MESSAGE);
+                }
+            }else
+                JOptionPane.showMessageDialog(null, "Le transporteur a déjà été choisi !", "", JOptionPane.ERROR_MESSAGE);
 
-            }catch (Exception e){
-                JOptionPane.showMessageDialog(null, "Merci de respecter le format : nom de l'entrepot; date !", "", JOptionPane.ERROR_MESSAGE);
-            }
         }else if(menu == menuItemChooseSupplier){
             MaterialNeed materialNeed = materialNeedsModel.data.get(rowSelectedMaterialNeeds);
             logisticAgent.acceptMaterialNeedSupplier(materialNeed);
             updateMaterialNeed(materialNeed,StateMaterialNeed.CHOISI);
             removeMaterialNeedRFP(materialNeed.getId());
+        }else if(menu == menuItemChooseTransporter){
+            TransporterNeed transporterNeed = counterProposalsTransportersModel.data.get(counterProposalsTransportersTable.getSelectedRow());
+            logisticAgent.chooseTransporter(transporterNeed);
+            removeOtherCounterProposalsTransportersNeeds(transporterNeed);
+            removeTransporterNeed(transporterNeed.getId());
+            updateCounterProposalTransporterNeedState(transporterNeed,StateTransporterNeed.CHOISI);
         }
     }
 
+    private boolean isTransporterChosenByProjectId(String id) {
+        return counterProposalsTransportersModel.isChosenByProjectId(id);
+    }
+
+    public boolean isTransporterChosen(String id) {
+        return counterProposalsTransportersModel.isChosen(id);
+    }
+
+    private void updateCounterProposalTransporterNeedState(TransporterNeed transporterNeed, StateTransporterNeed newState) {
+        counterProposalsTransportersModel.updateState(transporterNeed,newState);
+    }
+
+    private boolean isSupplierChosen(String id) {
+        return materialNeedsModel.findByProjectId(id) != null;
+    }
+
+    public void removeOtherCounterProposalsTransportersNeeds(TransporterNeed transporterNeed) {
+        counterProposalsTransportersModel.removeOthers(transporterNeed);
+    }
+
+    public void addTransporterNeedFinished(TransporterNeed transporterNeed) {
+        counterProposalsTransportersModel.add(transporterNeed);
+    }
+
+    public void removeTransporterNeed(String transporterNeedId) {
+        proposalsTransportersModel.removeByTranporterNeedId(transporterNeedId);
+    }
+
+    public List<String> findOthersTransporters(TransporterNeed transporterNeed) {
+        return counterProposalsTransportersModel.findAllOthersTransporters(transporterNeed);
+    }
 }
