@@ -37,7 +37,7 @@ public final class OpenJMS {
     public void init(){
         try {
             System.out.println("initialisation ...");
-            String destinationsToRemove[] = {"needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer", "materialNeeds", "finishedProduction", "packageMaterialNeed"};
+            String destinationsToRemove[] = {"transportersProposals","needsCustomersLogistic", "transmitCounterRFPToCustomer", "requestsForProposal", "specificationManufacturer", "counterRFPManufacturer", "materialNeeds", "finishedProduction", "packageMaterialNeed"};
             Vector destinations = admin.getAllDestinations();
             Iterator iterator = destinations.iterator();
             while (iterator.hasNext()) {
@@ -61,6 +61,7 @@ public final class OpenJMS {
                 }
             }
 
+            createTopic("transportersProposals");
         }catch(JMSException e){
             System.out.println("Failed to initialized OpenJMS");
         }
@@ -105,25 +106,27 @@ public final class OpenJMS {
         return result;
     }
 
-    public void postMessageInTopic(String message, String topicName) throws Exception{
+    public void postMessageInTopic(String message, String topicName){
+        try {
+            Context context = new InitialContext();
 
-        Context context=new InitialContext();
+            TopicConnectionFactory qcf = (TopicConnectionFactory) context.lookup("ConnectionFactory");
+            Topic q = (Topic) context.lookup(topicName);
+            TopicConnection qc = qcf.createTopicConnection();
 
-        TopicConnectionFactory qcf = (TopicConnectionFactory) context.lookup("ConnectionFactory");
-        Topic q = (Topic) context.lookup(topicName);
-        TopicConnection qc = qcf.createTopicConnection();
+            TopicSession qs = qc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
+            qs.createSubscriber(q);
+            MessageProducer mp = qs.createProducer(q);
+            qc.start();
 
-        TopicSession qs = qc.createTopicSession(false, Session.AUTO_ACKNOWLEDGE);
-        qs.createSubscriber(q);
-        MessageProducer mp = qs.createProducer(q);
-        qc.start();
-
-        Thread.sleep(1000);
-        TextMessage textMessage = qs.createTextMessage();
-        textMessage.setText(message);
-        mp.send(textMessage);
-        Log.write("admin","Message added in topic " + topicName + " : " + textMessage.getText());
-
+            Thread.sleep(1000);
+            TextMessage textMessage = qs.createTextMessage();
+            textMessage.setText(message);
+            mp.send(textMessage);
+            Log.write("admin", "Message added in topic " + topicName + " : " + textMessage.getText());
+        }catch (Exception e){
+            Log.write("admin","Failed to post message in topic");
+        }
     }
 
     public void postMessageInQueue(String message, String queueName){

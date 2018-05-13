@@ -17,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class LogisticAgentGUI extends JFrame implements ActionListener{
@@ -306,7 +307,24 @@ public class LogisticAgentGUI extends JFrame implements ActionListener{
         }else if(menu == menuItemRFPSuppliers){
             new CreateRFPMaterials(this, counterProposalsModel.data.get(rowSelectedCounterProposal).getId());
         }else if(menu == menuItemRFPTransporters){
+            try {
+                Specification counterProposal = counterProposalsModel.data.get(rowSelectedCounterProposal);
+                String addressFrom = logisticAgent.getManufacturerAddress(counterProposal.getManufacturer());
+                String addressToAndDate = JOptionPane.showInputDialog(
+                        this,
+                        "Les produits finis sont à " + addressFrom + ". Où et quand voulez-vous les acheminer ? (format : nom de l'entrepot; date)",
+                        "Choisissez une destination",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                String array[] = addressToAndDate.split(";");
+                String warehouse = array[0];
+                String date = array[1];
 
+                logisticAgent.makeAProposalTransporter(counterProposal, addressFrom, warehouse, date);
+
+            }catch (Exception e){
+                JOptionPane.showMessageDialog(null, "Merci de respecter le format : nom de l'entrepot; date !", "", JOptionPane.ERROR_MESSAGE);
+            }
         }else if(menu == menuItemChooseSupplier){
             MaterialNeed materialNeed = materialNeedsModel.data.get(rowSelectedMaterialNeeds);
             logisticAgent.acceptMaterialNeedSupplier(materialNeed);

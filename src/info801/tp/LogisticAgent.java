@@ -1,10 +1,7 @@
 package info801.tp;
 
 import info801.tp.gui.LogisticAgentGUI;
-import info801.tp.models.MaterialNeed;
-import info801.tp.models.Specification;
-import info801.tp.models.State;
-import info801.tp.models.StateMaterialNeed;
+import info801.tp.models.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -208,4 +205,18 @@ public class LogisticAgent extends Thread {
         OpenJMS.getInstance().postMessageInQueue(materialNeedString,"packageMaterialNeed"+manufacturerName);
     }
 
+    public boolean makeAProposalTransporter(Specification counterProposal, String addressFrom, String warehouse, String date) {
+        boolean result = OpenJMS.getInstance().destinationExists(warehouse);
+        if(result){
+            OpenJMS.getInstance().postMessageInTopic(counterProposal.toString() + ";;" + RandomGenerator.generateId() + ";;" + addressFrom + ";;" + warehouse + ";;" + date + ";;" + StateTransporterNeed.EN_ATTENTE.toString(),"transportersProposals");
+            result = true;
+        }
+        return result;
+    }
+
+    public String getManufacturerAddress(String manufacturerName){
+        OpenJMS.getInstance().postMessageInQueue("","getAddress"+manufacturerName);
+        String address = OpenJMS.getInstance().receiveMessageFromQueue("getAddress"+manufacturerName);
+        return address;
+    }
 }

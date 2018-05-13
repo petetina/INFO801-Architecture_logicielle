@@ -1,7 +1,9 @@
 package info801.tp;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 public abstract class Tools {
     public static String getCurrentTime(){

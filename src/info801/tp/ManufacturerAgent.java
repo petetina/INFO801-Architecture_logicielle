@@ -16,9 +16,11 @@ public class ManufacturerAgent extends Thread {
     private String name;
     private int id;
     private List<LogisticAgent> logisticAgents;
+    private String address;
 
-    public ManufacturerAgent(int id){
+    public ManufacturerAgent(int id, String address){
         this.id = id;
+        this.address = address;
         this.name = "Manufacturer"+id;
         frame = new ManufacturerAgentGUI(this);
         logisticAgents = new ArrayList<>();
@@ -27,6 +29,7 @@ public class ManufacturerAgent extends Thread {
         OpenJMS.getInstance().createQueue("counterRFP"+name);
         OpenJMS.getInstance().createQueue("opinionProposals"+name);
         OpenJMS.getInstance().createQueue("packageMaterialNeed"+name);
+        OpenJMS.getInstance().createQueue("getAddress"+name);
     }
 
     @Override
@@ -85,10 +88,25 @@ public class ManufacturerAgent extends Thread {
             }
         };
 
+        Thread getAddressThread = new Thread(){
+            @Override
+            public void run() {
+                while(true){
+                    getAddress();
+                }
+            }
+        };
+
         getCounterProposalsThread.start();
         opinionProposalThread.start();
         packageMaterialNeedThread.start();
+        getAddressThread.start();
 
+    }
+
+    private void getAddress() {
+        OpenJMS.getInstance().receiveMessageFromQueue("getAddress"+name);
+        OpenJMS.getInstance().postMessageInQueue(address,"getAddress"+name);
     }
 
     public void addLogistic(LogisticAgent logisticAgent){

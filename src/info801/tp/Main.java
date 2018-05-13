@@ -9,9 +9,9 @@ public class Main {
 
             LogisticAgent logisticAgent1 = new LogisticAgent(1);
 
-            ManufacturerAgent manufacturerAgent1 = new ManufacturerAgent(1);
-            ManufacturerAgent manufacturerAgent2 = new ManufacturerAgent(2);
-            ManufacturerAgent manufacturerAgent3 = new ManufacturerAgent(3);
+            ManufacturerAgent manufacturerAgent1 = new ManufacturerAgent(1,"Paris");
+            ManufacturerAgent manufacturerAgent2 = new ManufacturerAgent(2, "Lyon");
+            ManufacturerAgent manufacturerAgent3 = new ManufacturerAgent(3, "Marseille");
 
             CustomerAgent customerAgent1 = new CustomerAgent(1);
 
@@ -22,6 +22,12 @@ public class Main {
             SupplierAgent supplierAgent = new SupplierAgent(1);
             SupplierAgent supplierAgent2 = new SupplierAgent(2);
             SupplierAgent supplierAgent3 = new SupplierAgent(3);
+
+            TransporterAgent transporterAgent = new TransporterAgent(1);
+            TransporterAgent transporterAgent2 = new TransporterAgent(2);
+
+            WarehouseAgent warehouseAgent = new WarehouseAgent(1);
+            WarehouseAgent warehouseAgent2 = new WarehouseAgent(2);
 
             //Add manufacturer 1 and 2 to logistic1 's manufacturerList
             //And logistic to manufacturer
@@ -49,6 +55,12 @@ public class Main {
             supplierAgent.start();
             supplierAgent2.start();
             supplierAgent3.start();
+
+            transporterAgent.start();
+            transporterAgent2.start();
+
+            warehouseAgent.start();
+            warehouseAgent.start();
         }catch(Exception e){
             System.out.println("Merci d'ouvrir OpenJMS");
         }
